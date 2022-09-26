@@ -1,5 +1,22 @@
 <Project Sdk="Microsoft.Build.NoTargets/3.5.6">
     <PropertyGroup>
         <TargetFramework>net7.0</TargetFramework>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+
+        <PackageId>My.Custom.Package</PackageId>
     </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="../ConsoleApp/ConsoleApp.csproj" OutputItemType="ConsoleAppOutput" />
+        <ProjectReference Include="../OtherLib/OtherLib.csproj" OutputItemType="OtherLibOutput" />
+    </ItemGroup>
+
+    <Target Name="GatherBuildOutputsForPack" AfterTargets="Build" BeforeTargets="Pack">
+        <ItemGroup>
+            <Content Include="@(ConsoleAppOutput)" PackagePath="foo"/>
+            <Content Include="@(OtherLibOutput)" PackagePath="bar" />
+        </ItemGroup>
+    </Target>
+
+
 </Project>
