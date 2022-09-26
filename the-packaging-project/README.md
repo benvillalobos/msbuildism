@@ -90,7 +90,7 @@ I'll cover the two most common ways that, in combination, should give you enough
 - No extra copies into packaging project's bin folder
 #### Cons
 - Manually referencing a file from the output of a separate project doesn't look nice.
-- Lack of
+- Lack of folder customization for specific items
 
 ### Gather Outputs To Package Project's Bin folder, THEN pack
 #### Pros
