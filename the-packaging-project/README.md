@@ -10,19 +10,15 @@ This article was written with the expectation that you have some familiarity wit
 - Targets
 
 ### To Recreate This Tutorial To Follow Along
-If you're curious about how to do this yourself, I highly recommend following along to better understand what to do.
-
-`mkdir the-packaging-project`
-
-`cd the-packaging-project`
-
-`dotnet new console -o ConsoleApp`
-
-`dotnet new classlib -o ClassLib`
-
-`dotnet add ConsoleApp reference ClassLib`
-
-`mkdir packaging`
+If you're interested in following along, run the following commands to recreate this setup.
+```
+mkdir the-packaging-project
+cd the-packaging-project
+dotnet new console -o ConsoleApp
+dotnet new classlib -o ClassLib
+dotnet add ConsoleApp reference ClassLib
+mkdir packaging
+```
 
 ## Table of Contents
 1. [Creating the Packaging Project](#creating-the-packaging-project)
