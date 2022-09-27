@@ -13,7 +13,7 @@
 
     <Target Name="GatherBuildOutputsForPack" AfterTargets="Build" BeforeTargets="Pack">
         <ItemGroup>
-            <Content Include="@(ConsoleAppOutput)" PackagePath="foo"/>
+            <Content Include="@(ConsoleAppOutput)" PackagePath="con"/>
             <Content Include="@(OtherLibOutput)" PackagePath="bar" />
         </ItemGroup>
     </Target>

@@ -1,7 +1,7 @@
 # What Is A Packaging Project?
-__"The project that packages your output into a *.nupkg"__
+__"The project that packages multiple build outputs into a *.nupkg"__
 
-This is about creating **a separate project** that wrangles together multiple build outputs all in one place.
+This is about creating **a separate project** that wrangles together individual build outputs all in one place.
 
 ## Expected Knowledge
 This article was written with the expectation that you have some familiarity with MSBuild. You should understand the following at minimum:
@@ -16,8 +16,8 @@ mkdir the-packaging-project
 cd the-packaging-project
 dotnet new console -o ConsoleApp
 dotnet new classlib -o ClassLib
+dotnet new classlib -o OtherLib
 dotnet add ConsoleApp reference ClassLib
-mkdir packaging
 ```
 
 ## Table of Contents
@@ -32,22 +32,33 @@ mkdir packaging
 First, let's get our project set up.
 
 1. Create a new folder, call it `packaging` or whatever name you prefer.
-1. Create a `*.csproj` that matches the name of your folder (not required, but it is convention).
+1. Create a `packaging.csproj` that matches the name of your folder (not required, but is convention).
     NOTE: It is **VERY** important that your project's extension is `csproj`. The build process is affected by which extension you give it.
-1. Ensure your project uses the [`Microsoft.Build.NoTargets` SDK](https://github.com/microsoft/MSBuildSdks/blob/main/src/NoTargets/README.md). This SDK is intended for projects that aren't meant to be compiled.
+1. Ensure your project uses the [Microsoft.Build.NoTargets SDK](https://github.com/microsoft/MSBuildSdks/blob/main/src/NoTargets/README.md). This SDK is intended for projects that aren't meant to be compiled. 
 1. Define a `TargetFramework` property for your project. This `TargetFramework` will not affect your other projects. See [this link](https://learn.microsoft.com/dotnet/standard/frameworks#supported-target-frameworks) (under `TFM`) for `TargetFramework` values.
+
+Your project should look something like this.
+```xml
+<!-- Version 3.5.6 just happens to be the latest version at the time of this writing. -->
+<Project Sdk="Microsoft.Build.NoTargets/3.5.6">
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+    </PropertyGroup>
+</Project>
+```
 
 ## 2. Building Your Projects
 In an ideal world, you build your packaging project and it "just handles everything." That means building your packaging project should cause your other projects to build. We do this through `ProjectReference` items.
 
-1. Create a `ProjectReference` item that references each project you want to build.
+1. Create a `ProjectReference` item that references each project you want to build. This is enough to trigger builds for each project you reference.
 ```xml
+    <!-- Note we don't include `ClassLib` here. That's because `ConsoleApp` already has a `ProjectReference` to it. ClassLib
+         will be built automatically through ConsoleApp's build process.-->
     <ItemGroup>
         <ProjectReference Include="../ConsoleApp/ConsoleApp.csproj" />
         <ProjectReference Include="../OtherLib/OtherLib.csproj">
     </ItemGroup>
 ```
-Create a `ProjectReference` per project you want to build, and that is enough to build them whenever `packaging.csproj` is built.
 
 ## 3. Creating the NuGet Package
 Now that our packaging project builds all other relevant projects, let's create our NuGet package.
