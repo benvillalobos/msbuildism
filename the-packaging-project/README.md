@@ -68,16 +68,15 @@ And this is technically true. We got our packaging project to build its referenc
 ## 4. Gather Your Build Outputs
 Ultimately, it is specially-marked `Content` items that get added to NuGet packages. The next step is to add the build output into `Content`, so that the build will take care of the rest.
 
-First, we need to place each respective `ProjectReference` output into its own item.
+1. First, we use [`OutputItemType` metadata](https://learn.microsoft.com/visualstudio/msbuild/common-msbuild-project-items#projectreference) on each `ProjectReference`.
 
-1. Add `OutputItemType` metadata to your `ProjectReference` items like so:
 ```xml
     <ItemGroup>
         <ProjectReference Include="../ConsoleApp/ConsoleApp.csproj" OutputItemType="ConsoleAppOutput" />
         <ProjectReference Include="../OtherLib/OtherLib.csproj" OutputItemType="OtherLibOutput" />
     </ItemGroup>
 ```
-This gathers the output of each `ProjectReference` item **into a new item**. Now, we have to insert this new item into `Content`. Unfortunately (or fortunately), you can do this MANY ways to do this.
+Setting `OutputItemType="Foo"` places the build outputs of that `ProjectReference` **into a new item** named "Foo". Now, we have to insert this new item into `Content` during the build. Unfortunately (or fortunately), you can do this MANY ways to do this.
 
 I'll cover the two most common ways that, in combination, should give you enough flexibility to get your package built and packed properly.
 
