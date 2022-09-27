@@ -79,7 +79,13 @@ And this is technically true. We got our packaging project to build its referenc
 ## 4. Gather Your Build Outputs
 Ultimately, it is specially-marked `Content` items that get added to NuGet packages. The next step is to add the build output into `Content`. The build will take care of the rest.
 
-Realistically, you'll need to gather outputs in multiple ways ways. Which way you use depends on exactly what you need. The first and simplest solution uses `OutputItemType` metadata.
+Realistically, you'll need to gather outputs in multiple ways ways. Which way you use depends on exactly what you need. Refer to this table to decide what's best for your needs.
+
+Output Needed | Method Required | Notes
+------        | ------ | ------
+Just the dll  | [OutputItemType](#using-outputitemtype) | In a "normal build" that involves compiling & using the `Microsoft.NET.Sdk`, this output item __would__ be passed to the compiler, ResolveAssemblyReferences, and included in the deps.json. Thanks to the `Microsoft.Build.NoTargets` SDK, we're not compiling an assembly. |
+dll, exe, pdb, deps.json, runtimeconfig.json  | [ReferenceOutputAssembly](#using-referenceoutputassembly) | asd
+anything else  | [Manually Gathering Outputs](#manually-gathering-other-build-outputs) | asd
 
 ### Using OutputItemType
 [Link to docs](https://learn.microsoft.com/visualstudio/msbuild/common-msbuild-project-items#projectreference). 
@@ -96,15 +102,13 @@ Realistically, you'll need to gather outputs in multiple ways ways. Which way yo
 Setting `OutputItemType="Foo"` tells the build to gather the build output of that `ProjectReference` **into a new item** named "Foo". Now we have to insert this new item into `Content` during the build. Unfortunately (or fortunately), you can do this MANY ways to do this.
 
 #### Limitations of OutputItemType
-The main limitation to be aware of is the meaning of "build outputs" here. Build outputs primarily means "the dll/exe/pdb". If your build produces other files, they may not be included in this new item.
+The main limitation to be aware of is the meaning of "build outputs" here. Build outputs primarily means "the output dll". If your build produces other files, they may not be included in this new item.
 
+#### Using `ReferenceOutputAssembly`
+Using `ReferenceOutputAssembly=true` on your `ProjectReference` will tell the build "
 
 ### Manually Gathering Other Build Outputs
 In the event that `OutputItemType` doesn't quite cut it, you have other options.
-
-#### 1. Use `ReferenceOutputAssembly`
-Using `ReferenceOutputAssembly=true` on your `ProjectReference` will tell the build "
-
 
 ### Using OutputItemType To Gather Build Outputs
 #### Pros
