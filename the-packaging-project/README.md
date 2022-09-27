@@ -79,7 +79,12 @@ And this is technically true. We got our packaging project to build its referenc
 ## 4. Gather Your Build Outputs
 Ultimately, it is specially-marked `Content` items that get added to NuGet packages. The next step is to add the build output into `Content`. The build will take care of the rest.
 
-1. First, we use [OutputItemType metadata](https://learn.microsoft.com/visualstudio/msbuild/common-msbuild-project-items#projectreference) on each `ProjectReference`.
+Realistically, you'll need to gather outputs in multiple ways ways. Which way you use depends on exactly what you need. The first and simplest solution uses `OutputItemType` metadata.
+
+### Using OutputItemType
+[Link to docs](https://learn.microsoft.com/visualstudio/msbuild/common-msbuild-project-items#projectreference). 
+
+1. First, place OutputItemType metadata on your ProjectReferences. Give them whatever name you like.
 
 ```xml
     <ItemGroup>
@@ -88,13 +93,22 @@ Ultimately, it is specially-marked `Content` items that get added to NuGet packa
     </ItemGroup>
 ```
 
-Setting `OutputItemType="Foo"` tells the build to gather the build output of that `ProjectReference` **into a new item** named "Foo". Now, we have to insert this new item into `Content` during the build. Unfortunately (or fortunately), you can do this MANY ways to do this.
+Setting `OutputItemType="Foo"` tells the build to gather the build output of that `ProjectReference` **into a new item** named "Foo". Now we have to insert this new item into `Content` during the build. Unfortunately (or fortunately), you can do this MANY ways to do this.
 
-I'll cover the two most common ways that, in combination, should give you enough flexibility to get your package built and packed properly.
+#### Limitations of OutputItemType
+The main limitation to be aware of is the meaning of "build outputs" here. Build outputs primarily means "the dll/exe/pdb". If your build produces other files, they may not be included in this new item.
 
-### Use outputs from ProjectReferences directly when packing
+
+### Manually Gathering Other Build Outputs
+In the event that `OutputItemType` doesn't quite cut it, you have other options.
+
+#### 1. Use `ReferenceOutputAssembly`
+Using `ReferenceOutputAssembly=true` on your `ProjectReference` will tell the build "
+
+
+### Using OutputItemType To Gather Build Outputs
 #### Pros
-- No extra copies into packaging project's bin folder
+- No extra copies into packaging project's bin folder, saving disk space & build time.
 #### Cons
 - Manually referencing a file from the output of a separate project doesn't look nice.
 - Lack of folder customization for specific items
@@ -111,3 +125,8 @@ If your reference is an application, this should be enough to have your packagin
         <ProjectReference Include="../ClassLib/ClassLib.csproj" />
     </ItemGroup>
 ```
+
+
+ReferenceOutputAssembly=true = copy the dll/exe/depsjson/runtimeconfig/json/pdb into bin.
+
+OutputItemType = Just get the dll
