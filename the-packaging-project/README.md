@@ -77,9 +77,9 @@ NU5017: Cannot create a package that has no dependencies nor content.
 And this is technically true. We got our packaging project to build its references and to create a NuGet package, but we haven't gathered anything to pack yet!
 
 ## 4. Gather Your Build Outputs
-Ultimately, it is specially-marked `Content` items that get added to NuGet packages. The next step is to add the build output into `Content`, so that the build will take care of the rest.
+Ultimately, it is specially-marked `Content` items that get added to NuGet packages. The next step is to add the build output into `Content`. The build will take care of the rest.
 
-1. First, we use [`OutputItemType` metadata](https://learn.microsoft.com/visualstudio/msbuild/common-msbuild-project-items#projectreference) on each `ProjectReference`.
+1. First, we use [OutputItemType metadata](https://learn.microsoft.com/visualstudio/msbuild/common-msbuild-project-items#projectreference) on each `ProjectReference`.
 
 ```xml
     <ItemGroup>
@@ -87,7 +87,8 @@ Ultimately, it is specially-marked `Content` items that get added to NuGet packa
         <ProjectReference Include="../OtherLib/OtherLib.csproj" OutputItemType="OtherLibOutput" />
     </ItemGroup>
 ```
-Setting `OutputItemType="Foo"` places the build outputs of that `ProjectReference` **into a new item** named "Foo". Now, we have to insert this new item into `Content` during the build. Unfortunately (or fortunately), you can do this MANY ways to do this.
+
+Setting `OutputItemType="Foo"` tells the build to gather the build output of that `ProjectReference` **into a new item** named "Foo". Now, we have to insert this new item into `Content` during the build. Unfortunately (or fortunately), you can do this MANY ways to do this.
 
 I'll cover the two most common ways that, in combination, should give you enough flexibility to get your package built and packed properly.
 
