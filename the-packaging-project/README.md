@@ -85,11 +85,11 @@ This is a multi-step process.
 ## Deciding what to pack
 Ultimately, it is specially-marked `Content` items that get added to NuGet packages. Realistically, you'll need to gather outputs in multiple ways ways. Which way you use depends on exactly what you need. Refer to this table to decide what's best for your needs.
 
-Output Needed | Suggested Method | Function | Notes
-------        | ------ | ------ | ------
-Just the dll  | [OutputItemType](#using-outputitemtype) | Gathers TargetOutputs into new items. | In a "normal build" that involves compiling & using the `Microsoft.NET.Sdk`, this output item __would__ be passed to the compiler, ResolveAssemblyReferences, and included in the deps.json. Thanks to the `Microsoft.Build.NoTargets` SDK, we're not compiling an assembly. |
-exe, deps.json, runtimeconfig.json | [ReferenceOutputAssembly](#using-referenceoutputassembly) | Copies ProjectReference build output into the packaging project's `bin/` directory. | asd
-anything else | [Manually Gathering Outputs](#manually-gathering-other-build-outputs) | Self explanatory | asd
+Output Needed | Suggested Method(s) | Function | Notes
+------        | --------- | --------- | ------
+The output .dll  | [OutputItemType](#using-outputitemtype) | Gathers TargetOutputs into new items. | In a "normal build" that involves compiling & using the `Microsoft.NET.Sdk`, this output item __would__ be passed to the compiler, ResolveAssemblyReferences, and included in the deps.json. Thanks to the `Microsoft.Build.NoTargets` SDK, we're not compiling an assembly. |
+exe, deps.json, or runtimeconfig.json | [ReferenceOutputAssembly](#using-referenceoutputassembly) | Copies ProjectReference build output into the packaging project's `bin/` directory. | asd
+anything else | 1. [Manually Gather Outputs](#manually-gathering-other-build-outputs) <br/> 2. [Extending OutputItemType](#extending-outputitemtype) |  | There are MANY ways to gather the different types of outputs of a build.
 
 ### Static vs. Generated Items
 Sometimes your build will generate files.
