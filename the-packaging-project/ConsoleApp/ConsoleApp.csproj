@@ -2,6 +2,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ClassLib\ClassLib.csproj" />
+
+    <!-- <ThrowAwayItem Include="throwawayitem.foo" /> -->
   </ItemGroup>
 
   <PropertyGroup>
@@ -10,5 +12,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+
+
 
 </Project>

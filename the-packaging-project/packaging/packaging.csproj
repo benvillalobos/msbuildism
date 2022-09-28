@@ -4,17 +4,32 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
         <PackageId>My.Custom.Package</PackageId>
+        <NoWarn>$(NoWarn);NU5100</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="../ConsoleApp/ConsoleApp.csproj" OutputItemType="ConsoleAppOutput" />
+        <!-- 
+            Private=true (default): Allows copying outputs from ProjectReferences.
+            Private=false: Prevents outputs from being copied. (Overrides ReferenceOutputAssembly="true")
+
+            ReferenceOutputAssembly=true: Copies the .dll/.pdb into the output folder. (default in Microsoft.NET.Sdk)
+            ReferenceOutputAssembly=false: Does not copy the .dll/.pdb into the output folder. (default in Microsoft.Build.NoTargets)
+        -->
+        <ProjectReference Include="../ConsoleApp/ConsoleApp.csproj" Private="false" OutputItemType="ConsoleAppOutput" />
+        <!-- ClassLib does not "double build" and we still get the output. -->
+        <ProjectReference Include="../ClassLib/ClassLib.csproj" OutputItemType="ClassLibOutput" />
         <ProjectReference Include="../OtherLib/OtherLib.csproj" OutputItemType="OtherLibOutput" />
     </ItemGroup>
 
     <Target Name="GatherBuildOutputsForPack" AfterTargets="Build" BeforeTargets="Pack">
         <ItemGroup>
-            <Content Include="@(ConsoleAppOutput)" PackagePath="con"/>
-            <Content Include="@(OtherLibOutput)" PackagePath="bar" />
+            <!-- Place the dll's into the nupkg -->
+            <Content Include="@(ConsoleAppOutput)" PackagePath="app"/>
+            <Content Include="@(ClassLibOutput)" PackagePath="app"/>
+            <Content Include="@(OtherLibOutput)" PackagePath="lib/net7.0" />
+
+            <!-- Grab other items and place them into the nupkg -->
+            
         </ItemGroup>
     </Target>
 

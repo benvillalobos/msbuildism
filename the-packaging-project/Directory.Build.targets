@@ -1,0 +1,4 @@
+<Project>
+  <Target Name="Foo" BeforeTargets="Build" Returns="@(ThrowAwayItem)">
+  </Target>
+</Project>
