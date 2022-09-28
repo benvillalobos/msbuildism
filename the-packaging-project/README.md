@@ -91,6 +91,9 @@ Just the dll  | [OutputItemType](#using-outputitemtype) | Gathers TargetOutputs 
 exe, deps.json, runtimeconfig.json | [ReferenceOutputAssembly](#using-referenceoutputassembly) | Copies ProjectReference build output into the packaging project's `bin/` directory. | asd
 anything else | [Manually Gathering Outputs](#manually-gathering-other-build-outputs) | Self explanatory | asd
 
+### Static vs. Generated Items
+Sometimes your build will generate files.
+
 ### Using OutputItemType
 [Link to docs](https://learn.microsoft.com/visualstudio/msbuild/common-msbuild-project-items#projectreference). 
 
