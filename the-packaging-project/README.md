@@ -6,27 +6,23 @@ So what is a packaging project anyway? In short:
 
 
 ## Table of Contents
-0. [Why would I want to create a packaging project?](#why-would-i-want-to-create-a-packaging-project)
+0. [Why is a packaging project useful?](#why-is-a-packaging-project-useful)
 1. [Creating the Packaging Project](#1-creating-the-packaging-project)
 1. [Building Your Projects From The Packaging Project](#2-building-your-projects-from-the-packaging-project)
 1. [Creating the NuGet Package](#3-creating-the-nuget-package))
 1. [Gathering Build Outputs](#4-gathering-build-outputs)
 1. [Customizing Your Package Layout](#5-customizing-your-package-layout)
 
-#### Why would I want to create a packaging project?
-Builds can get **very** complicated **very** quickly.
-A few common reasons might be:
-- To simplify project files by separating out build logic.
+#### Why is a packaging project useful?
+- A packaging project can be a convenient way to gather multi-targeted or multi-platform build outputs.
+- To separate packaging & build logic from normal projects.
 - Fix build-ordering issues.
-- Your projects are multi-targeted or multi-platform and require a separate project to gather these outputs.
 
 ## 1. Creating The Packaging Project
-First, let's get our project set up.
-
 1. Create a new folder, call it `packaging` or whatever name you prefer.
 1. Create a `packaging.csproj` that matches the name of your folder (not required, but is convention).
     NOTE: It is **VERY** important that your project's extension is `csproj`. The build process is affected by which extension you give it.
-1. Ensure your project uses the [Microsoft.Build.NoTargets SDK](https://github.com/microsoft/MSBuildSdks/blob/main/src/NoTargets/README.md). This SDK is intended for projects that aren't meant to be compiled. 
+1. Ensure your project uses the [Microsoft.Build.NoTargets SDK](https://github.com/microsoft/MSBuildSdks/blob/main/src/NoTargets/README.md). This SDK is intended for projects that aren't meant to be compiled.
 1. Define a `TargetFramework` property for your project. This `TargetFramework` will not affect your other projects. See [this link](https://learn.microsoft.com/dotnet/standard/frameworks#supported-target-frameworks) (under `TFM`) for `TargetFramework` values.
 
 Your project should look something like this.
@@ -40,35 +36,29 @@ Your project should look something like this.
 ```
 
 ## 2. Building Your Projects From The Packaging Project
-In an ideal world, your packaging project should "just handle everything." That means building your packaging project should cause your other projects to build. We do this through `ProjectReference` items.
+In an ideal world, your packaging project should "just handle everything." That means building your packaging project should cause your other projects to build. MSBuild does this through `ProjectReference` items.
 
 1. Create a `ProjectReference` item for each project you want to build. This is enough to trigger builds for each project.
 ```xml
-    <!-- Note we don't include `ClassLib` here. That's because `ConsoleApp` already has a `ProjectReference` to it. ClassLib
-         will be built automatically through ConsoleApp's build process.-->
+<Project Sdk="Microsoft.Build.NoTargets/3.5.6">
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+    </PropertyGroup>
+
+    <!--
+        Note we don't need to include `ClassLib` here. `ConsoleApp` already has a `ProjectReference` to it. ClassLib
+        will be built automatically through ConsoleApp's build process. If you require the output of a "transitive reference"
+        like this, you'd need to add a `ProjectReference` to it. Note that would NOT cause an "over-build" here.
+    -->
     <ItemGroup>
         <ProjectReference Include="../ConsoleApp/ConsoleApp.csproj" />
         <ProjectReference Include="../OtherLib/OtherLib.csproj">
     </ItemGroup>
-```
-
-## 3. Creating the NuGet Package
-Now that our packaging project builds all other relevant projects, let's create our NuGet package.
-
-1. Set this one property to have your packaging project pack on every single build.
-```
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-```
-
-And that's basically it!...sort of. If you build `packaging.csproj` at this point you'll see the following error:
+</Project>
 
 ```
-NU5017: Cannot create a package that has no dependencies nor content.
-```
 
-And this is technically true. We got our packaging project to build its references and to create a NuGet package, but we haven't gathered anything to pack yet!
-
-## 4. Gathering Build Outputs
+## 3. Gathering Build Outputs
 This is a multi-step process.
 
 1. Decide what to pack.
@@ -116,7 +106,6 @@ This is the "catch-all" method where you hard-code paths to items.
 ```
 Sometimes you can't avoid hard-coding paths to certain files. This can often be easier than copying them into the packaging project's build output. If you want absolutely minimal build steps, you'll want to do this rather than copying build outputs into packaging, and packing from there.
 
-
 ### Globbing Build Outputs
 Globbing is including many items via a wildcard, like `*.xml` to gather all xml files from a directory.
 
@@ -141,8 +130,34 @@ Globbing is including many items via a wildcard, like `*.xml` to gather all xml 
 </Project>
 ```
 
-## 5. Customizing Your Package Layout
+## 4. Creating the NuGet Package
+Our packaging project builds its references and gathers their respective outputs. Now, it's time to create the NuGet package.
 
+1. These two properties should allow your project to generate a NuGet package in the `bin/` directory.
+```xml
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageId>My.Custom.Package</PackageId>
+```
+
+For best practices and more properties that affect the NuGet package, see [Package Authoring Best Practices](https://learn.microsoft.com/nuget/create-packages/package-authoring-best-practices)
+
+## 5. Customizing Your Package Layout
+The final step is deciding where each item goes inside the NuGet package. You do this by specifying `PackagePath` metadata on your `Content` items.
+
+```xml
+    <ItemGroup>
+        <Content Include="@(ConsoleAppOutput)" PackagePath="app"/>
+        <Content Include="@(ClassLibOutput)" PackagePath="app"/>
+        <Content Include="@(OtherLibOutput)" PackagePath="lib/$(TargetFramework)" />
+    </ItemGroup>
+```
+
+Note: You may see a `NU5100` complaining about dll's that aren't in a `lib/` folder. If your folder structure is intended to be this way, simply add `NU5100` to the `NoWarn` property.
+```xml
+    <PropertyGroup>
+        <NoWarn>$(NoWarn);NU5100</NoWarn>
+    </PropertyGroup>
+``` 
 
 # To Do
 The context for why specific flags exist.
