@@ -1,7 +1,10 @@
-# What Is A Packaging Project?
-__"The project that packages multiple build outputs into a *.nupkg"__
+# Creating A Packaging Project
+So what is a packaging project anyway? In short:
 
-This is about creating **a separate project** that wrangles together separate build outputs all in one place.
+_"A **separate** project that wrangles together multiple build outputs into a single NuGet package"_
+
+#### Why would I want a packaging project?
+Builds can get **very** complicated **very** quickly, and it can prove useful to separate out as much build logic as possible. This means simpler project files for your repo in the long run.
 
 ### To Recreate This Tutorial To Follow Along
 If you're interested in following along, run the following commands to recreate this setup.
@@ -15,11 +18,11 @@ dotnet add ConsoleApp reference ClassLib
 ```
 
 ## Table of Contents
-1. [Creating the Packaging Project](#creating-the-packaging-project)
-1. Building Your Projects From The Packaging Project
-1. [Creating the NuGet Package](#creating-the-nuget-package)
-1. Gather Build Outputs
-1. Customizing The Folder Structure
+1. [Creating the Packaging Project](#1-creating-the-packaging-project)
+1. [Building Your Projects From The Packaging Project](#2-building-your-projects-from-the-packaging-project)
+1. [Creating the NuGet Package](#3-creating-the-nuget-package))
+1. [Gathering Build Outputs](#4-gathering-build-outputs)
+1. [Customizing Your Package Layout](#5-customizing-your-package-layout)
 
 ## 1. Creating The Packaging Project
 First, let's get our project set up.
@@ -40,7 +43,7 @@ Your project should look something like this.
 </Project>
 ```
 
-## 2. Building Your Projects
+## 2. Building Your Projects From The Packaging Project
 In an ideal world, your packaging project should "just handle everything." That means building your packaging project should cause your other projects to build. We do this through `ProjectReference` items.
 
 1. Create a `ProjectReference` item for each project you want to build. This is enough to trigger builds for each project.
@@ -69,15 +72,17 @@ NU5017: Cannot create a package that has no dependencies nor content.
 
 And this is technically true. We got our packaging project to build its references and to create a NuGet package, but we haven't gathered anything to pack yet!
 
-## 4. Gather Your Build Outputs
+## 4. Gathering Build Outputs
 This is a multi-step process.
 
 1. Decide what to pack.
 1. Create a target that runs between the `Build` and `Pack` targets.
 1. In the new target, add relevant files to `Content`.
 
-## Deciding what to pack
-Ultimately, it is specially-marked `Content` items that get added to NuGet packages. Realistically, you'll need to gather outputs in multiple ways ways. Which way you use depends on exactly what you need. Refer to this table to decide what's best for your needs.
+### Deciding what to pack
+Realistically, you'll need to gather outputs in multiple ways ways. Which way you use depends on exactly what you need. Refer to this table to decide what's best for your needs.
+
+The common thread for every method is that each item must be added to `Content`, and given a `PackagePath` metadata to customize your package layout.
 
 Output Needed | Suggested Method(s) | Function | Notes
 ------        | --------- | --------- | ------
@@ -105,18 +110,18 @@ Setting `OutputItemType="Foo"` tells the build to gather the output of that `Pro
 ### Using `ReferenceOutputAssembly`
 Including `ReferenceOutputAssembly=true` on your `ProjectReference` will tell the build to copy the exe/pdb/runtimeconfig.json/deps.json into the packaging project's `bin/` directory. Note this does _not_ inform the build to copy the `.dll`/`.pdb` over. This value is defaulted to true in `Microsoft.NET.Sdk`, but not in `Microsoft.Build.NoTargets`.
 
-## Manually Gathering Build Outputs
+### Manually Gathering Build Outputs
 This is the "catch-all" method where you hard-code paths to items.
 
 ```xml
     <ItemGroup>
-        <Content Include="../OtherLib/$(OutDir)/someFile.foo" PackagePath="extras" />
+        <Content Include="../OtherLib/$(OutDir)/someFile.foo"/>
     </ItemGroup>
 ```
 Sometimes you can't avoid hard-coding paths to certain files. This can often be easier than copying them into the packaging project's build output. If you want absolutely minimal build steps, you'll want to do this rather than copying build outputs into packaging, and packing from there.
 
 
-## Globbing Build Outputs
+### Globbing Build Outputs
 Globbing is including many items via a wildcard, like `*.xml` to gather all xml files from a directory.
 
 **Note**: Understanding the [difference between Evaluation and Execution]() phases is important here. Files generated _during_ the build must be globbed from a target. Or more specifically, those files must be globbed _at the time that they exist_.
@@ -139,6 +144,9 @@ Globbing is including many items via a wildcard, like `*.xml` to gather all xml 
     </Target>
 </Project>
 ```
+
+## 5. Customizing Your Package Layout
+
 
 # To Do
 The context for why specific flags exist.
