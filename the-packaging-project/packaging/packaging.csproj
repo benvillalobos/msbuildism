@@ -8,6 +8,18 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <!-- Example of manually gathering build outputs. -->
+        <Content Include="../ClassLib/staticfile.foo" PackagePath="extras" />
+
+        <!-- 
+            Example of trying to glob a generated file too soon.
+            There will not be a `foo` folder in `extras` because `GeneratedFile` wasn't found.
+            Note: Clean the `ClassLib` project before building this project to see this in action.
+        -->
+        <Content Include="../ClassLib/*.xml" PackagePath="extras/foo" />
+    </ItemGroup>
+
+    <ItemGroup>
         <!-- 
             Private=true (default): Allows copying outputs from ProjectReferences.
             Private=false: Prevents outputs from being copied. (Overrides ReferenceOutputAssembly="true")
@@ -28,8 +40,11 @@
             <Content Include="@(ClassLibOutput)" PackagePath="app"/>
             <Content Include="@(OtherLibOutput)" PackagePath="lib/net7.0" />
 
-            <!-- Grab other items and place them into the nupkg -->
-            
+            <!-- 
+                Example of a file that MUST be globbed from a target, after the file was generated.
+                If this file was included outside of a target, it would not be included in the nuget package.
+            -->
+            <Content Include="../ClassLib/*.xml" PackagePath="extras" />
         </ItemGroup>
     </Target>
 

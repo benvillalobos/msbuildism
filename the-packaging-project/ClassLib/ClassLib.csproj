@@ -6,4 +6,14 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <Target Name="GenerateAFile" AfterTargets="Build">
+    <Touch Files="GeneratedFile.xml" AlwaysCreate="true" />
+    <Touch Files="GeneratedFile2.xml" AlwaysCreate="true" />
+  </Target>
+
+  <Target Name="DeleteGeneratedFile" AfterTargets="Clean">
+    <Delete Files="GeneratedFile.xml" />
+    <Delete Files="GeneratedFile2.xml" />
+  </Target>
+
 </Project>

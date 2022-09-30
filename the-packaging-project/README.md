@@ -91,13 +91,6 @@ The output .dll  | [OutputItemType](#using-outputitemtype) | Gathers TargetOutpu
 exe, deps.json, or runtimeconfig.json | [ReferenceOutputAssembly](#using-referenceoutputassembly) | Copies ProjectReference build output into the packaging project's `bin/` directory. | If you care about _absolute minimal_ build steps/copies, you may want to [Manually Gather Outputs](#manually-gathering-other-build-outputs) instead. Sometimes a direct reference to an item is better than copying it over entirely.
 Generated Files<br/>Static files in separate projects<br/>Etc. | 1. [Manually Gather Outputs](#manually-gathering-other-build-outputs) <br/> 2. [Extending OutputItemType](#extending-outputitemtype) |  | There are MANY ways to gather the different types of outputs of a build.
 
-### Static vs. Generated Items
-Sometimes your build will generate files.
-
-TODO:
-- Items outside of a target that directly refer to specific files.
-- Items inside of a target to gather generated files after a certain build step.
-
 ### Using OutputItemType
 [Link to docs](https://learn.microsoft.com/visualstudio/msbuild/common-msbuild-project-items#projectreference). 
 
@@ -113,7 +106,39 @@ TODO:
 Setting `OutputItemType="Foo"` tells the build to gather the output of that `ProjectReference` **into a new item** named "Foo". Note this is limited to the `dll` and other items returned from targets you tell your ProjectReferences to run. For more info on that, see [extending OutputItemType](#extending-outputitemtype).
 
 #### Extending OutputItemType
-`OutputItemType` returns the "target outputs" of the build. "Target Outputs" is quite literally what the `Build` target returns. If you'd like to extend what your `ProjectReference` returns, try adding `Targets="MyTarget;Build"` to your project reference. You can then create a target named `MyTarget` in that project, and ensure that target returns whatever items you need to be packed. This can help keep each project "self-contained" with respect to what it tells the packaging project to pack. See the docs on [Target attributes for more details](https://learn.microsoft.com/visualstudio/msbuild/target-element-msbuild#attributes).
+`OutputItemType` returns the "target outputs" of the build. "Target Outputs," in the average build, contains what the `Build` target returns: the `.dll`. If you'd like to extend what your `ProjectReference` returns, try adding `Targets="MyTarget;Build"` to your project reference. You can then create a target named `MyTarget` in that project that returns the items you want to pack. This can help keep each project "self-contained" with respect to what it tells the packaging project to pack. See the docs on [Target attributes for more details](https://learn.microsoft.com/visualstudio/msbuild/target-element-msbuild#attributes).
 
-#### Using `ReferenceOutputAssembly`
+### Using `ReferenceOutputAssembly`
 Including `ReferenceOutputAssembly=true` on your `ProjectReference` will tell the build to copy the output dll/exe/pdb/runtimeconfig.json/deps.json into the packaging project's `bin/` directory. Note this does _not_ inform the build to copy the `.dll`/`.pdb` over. This is the default in `Microsoft.NET.Sdk`, but not in `Microsoft.Build.NoTargets`.
+
+## Manually Gathering Build Outputs
+This is the "catch-all" method where you hard-code paths to items.
+
+```xml
+
+```
+
+
+## Globbing Build Outputs
+Globbing is including many items via a wildcard, like `*.xml` to gather all xml files from a directory.
+
+**Note**: Understanding the [difference between Evaluation and Execution]() phases is important here. Files generated _during_ the build must be globbed from a target. Or more specifically, those files must be globbed _at the time that they exist_.
+
+```xml
+<Project>
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+    </PropertyGroup>
+    <ItemGroup>
+        <!-- This will NOT add the generated file to content, because it doesn't exist at the start of the build. -->
+        <Content Include="../ClassLib/*.xml" PackagePath="extras/foo">
+    </ItemGroup>
+
+    <Target Name="Foo" AfterTargets="Build">
+        <ItemGroup>
+            <!-- By the time this target runs, GeneratedFile.xml will have been generated. NOW it will be added to Content. -->
+            <Content Include="../ClassLib/*.xml" PackagePath="extras"/>
+        </ItemGroup>
+    </Target>
+</Project>
+```
