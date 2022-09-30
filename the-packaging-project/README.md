@@ -1,13 +1,7 @@
 # What Is A Packaging Project?
 __"The project that packages multiple build outputs into a *.nupkg"__
 
-This is about creating **a separate project** that wrangles together individual build outputs all in one place.
-
-## Expected Knowledge
-This article was written with the expectation that you have some familiarity with MSBuild. You should understand the following at minimum:
-- Properties
-- Items
-- Targets
+This is about creating **a separate project** that wrangles together separate build outputs all in one place.
 
 ### To Recreate This Tutorial To Follow Along
 If you're interested in following along, run the following commands to recreate this setup.
@@ -38,7 +32,7 @@ First, let's get our project set up.
 
 Your project should look something like this.
 ```xml
-<!-- Version 3.5.6 just happens to be the latest version at the time of this writing. -->
+<!-- Version 3.5.6 is the latest version at the time of this writing. -->
 <Project Sdk="Microsoft.Build.NoTargets/3.5.6">
     <PropertyGroup>
         <TargetFramework>net7.0</TargetFramework>
@@ -47,9 +41,9 @@ Your project should look something like this.
 ```
 
 ## 2. Building Your Projects
-In an ideal world, you build your packaging project and it "just handles everything." That means building your packaging project should cause your other projects to build. We do this through `ProjectReference` items.
+In an ideal world, your packaging project should "just handle everything." That means building your packaging project should cause your other projects to build. We do this through `ProjectReference` items.
 
-1. Create a `ProjectReference` item that references each project you want to build. This is enough to trigger builds for each project you reference.
+1. Create a `ProjectReference` item for each project you want to build. This is enough to trigger builds for each project.
 ```xml
     <!-- Note we don't include `ClassLib` here. That's because `ConsoleApp` already has a `ProjectReference` to it. ClassLib
          will be built automatically through ConsoleApp's build process.-->
