@@ -1,28 +1,24 @@
 # Creating A Packaging Project
 So what is a packaging project anyway? In short:
 
-_"A **separate** project that wrangles together multiple build outputs into a single NuGet package"_
+#### _"A **separate** project that wrangles together multiple build outputs into a single NuGet package"_
 
-#### Why would I want a packaging project?
-Builds can get **very** complicated **very** quickly, and it can prove useful to separate out as much build logic as possible. This means simpler project files for your repo in the long run.
 
-### To Recreate This Tutorial To Follow Along
-If you're interested in following along, run the following commands to recreate this setup.
-```
-mkdir the-packaging-project
-cd the-packaging-project
-dotnet new console -o ConsoleApp
-dotnet new classlib -o ClassLib
-dotnet new classlib -o OtherLib
-dotnet add ConsoleApp reference ClassLib
-```
 
 ## Table of Contents
+0. [Why would I want to create a packaging project?](#why-would-i-want-to-create-a-packaging-project)
 1. [Creating the Packaging Project](#1-creating-the-packaging-project)
 1. [Building Your Projects From The Packaging Project](#2-building-your-projects-from-the-packaging-project)
 1. [Creating the NuGet Package](#3-creating-the-nuget-package))
 1. [Gathering Build Outputs](#4-gathering-build-outputs)
 1. [Customizing Your Package Layout](#5-customizing-your-package-layout)
+
+#### Why would I want to create a packaging project?
+Builds can get **very** complicated **very** quickly.
+A few common reasons might be:
+- To simplify project files by separating out build logic.
+- Fix build-ordering issues.
+- Your projects are multi-targeted or multi-platform and require a separate project to gather these outputs.
 
 ## 1. Creating The Packaging Project
 First, let's get our project set up.
