@@ -109,7 +109,7 @@ Setting `OutputItemType="Foo"` tells the build to gather the output of that `Pro
 `OutputItemType` returns the "target outputs" of the build. "Target Outputs," in the average build, contains what the `Build` target returns: the `.dll`. If you'd like to extend what your `ProjectReference` returns, try adding `Targets="MyTarget;Build"` to your project reference. You can then create a target named `MyTarget` in that project that returns the items you want to pack. This can help keep each project "self-contained" with respect to what it tells the packaging project to pack. See the docs on [Target attributes for more details](https://learn.microsoft.com/visualstudio/msbuild/target-element-msbuild#attributes).
 
 ### Using `ReferenceOutputAssembly`
-Including `ReferenceOutputAssembly=true` on your `ProjectReference` will tell the build to copy the output dll/exe/pdb/runtimeconfig.json/deps.json into the packaging project's `bin/` directory. Note this does _not_ inform the build to copy the `.dll`/`.pdb` over. This is the default in `Microsoft.NET.Sdk`, but not in `Microsoft.Build.NoTargets`.
+Including `ReferenceOutputAssembly=true` on your `ProjectReference` will tell the build to copy the exe/pdb/runtimeconfig.json/deps.json into the packaging project's `bin/` directory. Note this does _not_ inform the build to copy the `.dll`/`.pdb` over. This value is defaulted to true in `Microsoft.NET.Sdk`, but not in `Microsoft.Build.NoTargets`.
 
 ## Manually Gathering Build Outputs
 This is the "catch-all" method where you hard-code paths to items.
@@ -142,3 +142,6 @@ Globbing is including many items via a wildcard, like `*.xml` to gather all xml 
     </Target>
 </Project>
 ```
+
+# To Do
+The context for why specific flags exist.

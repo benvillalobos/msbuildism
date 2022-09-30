@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Include="someFile.foo" CopyToOutputDirectory="Always" />
+  </ItemGroup>
+
 </Project>

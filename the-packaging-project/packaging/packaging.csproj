@@ -1,14 +1,23 @@
 <Project Sdk="Microsoft.Build.NoTargets/3.5.6">
     <PropertyGroup>
         <TargetFramework>net7.0</TargetFramework>
-        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
+        <!--
+            Minimal properties to set for generating a NuGet package. For more info, see:
+            https://learn.microsoft.com/nuget/create-packages/package-authoring-best-practices#package-metadata
+        -->
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <PackageId>My.Custom.Package</PackageId>
+
+        <!--
+            NoWarn NU5100 if your package layout isn't the "traditional" layout.
+            https://learn.microsoft.com/nuget/reference/errors-and-warnings/nu5100
+        -->
         <NoWarn>$(NoWarn);NU5100</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
-        <!-- Example of manually gathering build outputs. -->
+        <!-- Example of manually gathering files. -->
         <Content Include="../ClassLib/staticfile.foo" PackagePath="extras" />
 
         <!-- 
@@ -41,12 +50,25 @@
             <Content Include="@(OtherLibOutput)" PackagePath="lib/net7.0" />
 
             <!-- 
-                Example of a file that MUST be globbed from a target, after the file was generated.
-                If this file was included outside of a target, it would not be included in the nuget package.
+                Example of manually referencing files.
+                Note: These files could be added to content outside of a target
+                      because they always exist.
+            -->
+            <Content Include="README.md" PackagePath="" />
+            <!--
+                Sometimes you can't avoid looking directly into `bin/`.
+                You can also consider telling the ProjectReference to OtherLib
+                to build a custom target that returns this file specifically.
+                It would then be included in @(OtherLibOutput).
+            -->
+            <Content Include="../OtherLib/$(OutDir)/someFile.foo" PackagePath="extras" />
+
+            <!-- 
+                Example of globbing that must occur from a target, after the file was generated.
+                See above where globbing would have placed these files into `extras/foo`, but fails
+                to do so because the xml files didn't exist at the time the glob was checked.
             -->
             <Content Include="../ClassLib/*.xml" PackagePath="extras" />
         </ItemGroup>
     </Target>
-
-
 </Project>
