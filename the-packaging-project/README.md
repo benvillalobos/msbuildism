@@ -115,8 +115,11 @@ Including `ReferenceOutputAssembly=true` on your `ProjectReference` will tell th
 This is the "catch-all" method where you hard-code paths to items.
 
 ```xml
-
+    <ItemGroup>
+        <Content Include="../OtherLib/$(OutDir)/someFile.foo" PackagePath="extras" />
+    </ItemGroup>
 ```
+Sometimes you can't avoid hard-coding paths to certain files. This can often be easier than copying them into the packaging project's build output. If you want absolutely minimal build steps, you'll want to do this rather than copying build outputs into packaging, and packing from there.
 
 
 ## Globbing Build Outputs
