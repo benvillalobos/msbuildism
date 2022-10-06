@@ -103,34 +103,11 @@ This is a "catch-all" method where you hard-code paths to items.
     <Content Include="../OtherLib/$(OutDir)/someFile.foo"/>
 </ItemGroup>
 ```
+
 Sometimes you can't avoid hard-coding paths to certain files. This can often be easier than copying them into the packaging project's build output. If you want absolutely minimal build steps, you'll want to do this rather than copying build outputs into packaging, and packing from there.
 
 ### Static files vs. Generated Files
 Static files (eg. Source files) are easy to deal with, simply add them to `Content` or `None` like usual. Generated files, however, must be added to an item type _during execution of the build_. For more on this, read [this gist](https://gist.github.com/BenVillalobos/c671baa1e32127f4ab582a5abd66b005).
-
-### Globbing Build Outputs
-Globbing is including many items via a wildcard, like `*.xml` to gather all xml files from a directory.
-
-**Note**:[Understanding the difference between Evaluation and Execution phases]() is important here. Files generated _during_ the build must be globbed from a target. Or more specifically, those files must be globbed _at the time that they exist_.
-
-```xml
-<Project>
-    <PropertyGroup>
-        <TargetFramework>net7.0</TargetFramework>
-    </PropertyGroup>
-    <ItemGroup>
-        <!-- This will NOT add the generated file to content, because it doesn't exist at the start of the build. -->
-        <Content Include="../ClassLib/*.xml" PackagePath="extras/foo">
-    </ItemGroup>
-
-    <Target Name="Foo" AfterTargets="Build">
-        <ItemGroup>
-            <!-- By the time this target runs, GeneratedFile.xml will have been generated. NOW it will be added to Content. -->
-            <Content Include="../ClassLib/*.xml" PackagePath="extras"/>
-        </ItemGroup>
-    </Target>
-</Project>
-```
 
 ## 5. Creating the NuGet Package
 Our packaging project builds its references and gathers their respective outputs. Now, it's time to create the NuGet package.
