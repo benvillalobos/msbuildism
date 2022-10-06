@@ -13,13 +13,13 @@ Other reasons to create a packaging project include:
 ## Step By Step
 1. [Creating the Packaging Project](#1-creating-the-packaging-project)
 1. [Building Your Projects From The Packaging Project](#2-building-your-projects-from-the-packaging-project)
-1. [Creating the NuGet Package](#3-creating-the-nuget-package))
+1. [Creating the NuGet Package](#3-creating-the-nuget-package)
 1. [Gathering Build Outputs](#4-gathering-build-outputs)
 1. [Customizing Your Package Layout](#5-customizing-your-package-layout)
 
 
 
-## 1. Creating The Packaging Project
+## 1. Create The Packaging Project
 1. Create a new folder, call it `packaging` or whatever name you prefer.
 1. Create a `packaging.csproj` that matches the name of your folder (not required, but is convention).
     - NOTE: It is **VERY** important that your project's extension is `csproj`. The build process is affected by which extension you give it.
@@ -36,7 +36,7 @@ Your project should look something like this.
 </Project>
 ```
 
-## 2. Building Your Projects From The Packaging Project
+## 2. Build Relevant Projects From The Packaging Project
 Building your packaging project should trigger builds for all relevant projects. MSBuild does this through `ProjectReference` items.
 
 1. Create a `ProjectReference` item for each project you want to build. This is enough to trigger builds for each project and the projects they reference.
@@ -47,7 +47,7 @@ Building your packaging project should trigger builds for all relevant projects.
     </ItemGroup>
 ```
 
-## 3. Gather Your Build Outputs
+## 3. Gather Build Outputs
 To better understand how packing items works, read [Including Content In A Package](https://learn.microsoft.com/nuget/reference/msbuild-targets#including-content-in-a-package). For most use cases, you'll either add your files to the `Content`, or `None` item types. `None` refers to items that have no affect on the build process, whereas `Content` items are already understood by the build process and are packed automatically.
 
 Because `None` items are not automatically packed, they'll need the metadata `Pack=True`. Regardless of the item being packed, you'll need to specify a `PackagePath` metadata if you want to customize the layout of your NuGet package.
@@ -58,7 +58,7 @@ Because `None` items are not automatically packed, they'll need the metadata `Pa
     </ItemGroup>
 ```
 
-## Deciding what to pack
+### Deciding what to pack
 Realistically, you'll need to gather outputs in multiple ways. Which way you use depends on exactly what you need. Refer to this table to decide what's best for your needs.
 
 Output Needed | Suggested Method(s) | Function | Notes
@@ -109,7 +109,7 @@ Sometimes you can't avoid hard-coding paths to certain files. This can often be 
 ### Static files vs. Generated Files
 Static files (eg. Source files) are easy to deal with, simply add them to `Content` or `None` like usual. Generated files, however, must be added to an item type _during execution of the build_. For more on this, read [this gist](https://gist.github.com/BenVillalobos/c671baa1e32127f4ab582a5abd66b005).
 
-## 5. Creating the NuGet Package
+## 4. Creating the NuGet Package
 Our packaging project builds its references and gathers their respective outputs. Now, it's time to create the NuGet package.
 
 1. These two properties should allow your project to generate a NuGet package in the `bin/` directory.
