@@ -60,7 +60,7 @@ In an ideal world, your packaging project should "just handle everything." That 
 
 And this is technically true. We got our packaging project to build its references and to create a NuGet package, but we haven't gathered anything to pack yet!
 
-## 4. Gather Your Build Outputs
+## 3. Gather Your Build Outputs
 To better understand packing items, read [Including Content In A Package](https://learn.microsoft.com/nuget/reference/msbuild-targets#including-content-in-a-package). For most use cases, you'll either add your files to the `Content`, or `None` item types. `None` is for items that have no affect on the build process, and is the safe bet for most files.
 
 `Content` items are automatically packed, where `None` items need the metadata `Pack=True`. Regardless of the item, you'll need to specify a `PackagePath` metadata if you want to customize the layout of your NuGet package.
@@ -128,7 +128,7 @@ Globbing is including many items via a wildcard, like `*.xml` to gather all xml 
 </Project>
 ```
 
-## 4. Creating the NuGet Package
+## 5. Creating the NuGet Package
 Our packaging project builds its references and gathers their respective outputs. Now, it's time to create the NuGet package.
 
 1. These two properties should allow your project to generate a NuGet package in the `bin/` directory.
