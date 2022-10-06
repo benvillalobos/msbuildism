@@ -17,8 +17,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <!-- Example of manually gathering files. -->
-        <Content Include="../ClassLib/staticfile.foo" PackagePath="extras" />
+        <!-- Example of manually gathering build outputs. -->
+        <None Include="../ClassLib/staticfile.foo" Pack="true" PackagePath="extras" />
 
         <!-- 
             Example of trying to glob a generated file too soon.

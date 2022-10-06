@@ -3,7 +3,7 @@ So what is a packaging project anyway? In short:
 
 #### _"A **separate** project that wrangles together multiple build outputs into a single NuGet package"_
 
-
+A separate project solves a few problems. It cleans up other projects by separating "packing logic" from general "build logic." It can also help solve build ordering issues for projects that need multi-targeted outputs or multi-platform outputs, among other things.
 
 ## Table of Contents
 0. [Why is a packaging project useful?](#why-is-a-packaging-project-useful)
@@ -21,8 +21,8 @@ So what is a packaging project anyway? In short:
 ## 1. Creating The Packaging Project
 1. Create a new folder, call it `packaging` or whatever name you prefer.
 1. Create a `packaging.csproj` that matches the name of your folder (not required, but is convention).
-    NOTE: It is **VERY** important that your project's extension is `csproj`. The build process is affected by which extension you give it.
-1. Ensure your project uses the [Microsoft.Build.NoTargets SDK](https://github.com/microsoft/MSBuildSdks/blob/main/src/NoTargets/README.md). This SDK is intended for projects that aren't meant to be compiled.
+    - NOTE: It is **VERY** important that your project's extension is `csproj`. The build process is affected by which extension you give it.
+1. Ensure your project uses the [Microsoft.Build.NoTargets SDK](https://github.com/microsoft/MSBuildSdks/blob/main/src/NoTargets/README.md). This SDK is intended for projects that aren't meant to be compiled. 
 1. Define a `TargetFramework` property for your project. This `TargetFramework` will not affect your other projects. See [this link](https://learn.microsoft.com/dotnet/standard/frameworks#supported-target-frameworks) (under `TFM`) for `TargetFramework` values.
 
 Your project should look something like this.
@@ -58,17 +58,15 @@ In an ideal world, your packaging project should "just handle everything." That 
 
 ```
 
-## 3. Gathering Build Outputs
-This is a multi-step process.
+And this is technically true. We got our packaging project to build its references and to create a NuGet package, but we haven't gathered anything to pack yet!
 
-1. Decide what to pack.
-1. Create a target that runs between the `Build` and `Pack` targets.
-1. In the new target, add relevant files to `Content`.
+## 4. Gather Your Build Outputs
+To better understand packing items, read [Including Content In A Package](https://learn.microsoft.com/nuget/reference/msbuild-targets#including-content-in-a-package). For most use cases, you'll either add your files to the `Content`, or `None` item types. `None` is for items that have no affect on the build process, and is the safe bet for most files.
 
-### Deciding what to pack
+`Content` items are automatically packed, where `None` items need the metadata `Pack=True`. Regardless of the item, you'll need to specify a `PackagePath` metadata if you want to customize the layout of your NuGet package.
+
+## Deciding what to pack
 Realistically, you'll need to gather outputs in multiple ways ways. Which way you use depends on exactly what you need. Refer to this table to decide what's best for your needs.
-
-The common thread for every method is that each item must be added to `Content`, and given a `PackagePath` metadata to customize your package layout.
 
 Output Needed | Suggested Method(s) | Function | Notes
 ------        | --------- | --------- | ------
