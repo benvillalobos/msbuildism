@@ -1,23 +1,17 @@
 # Creating A Packaging Project
-So what is a packaging project anyway?
+### What is a packaging project?
 
-> 💡 A packaging project is a **separate** project that gathers multiple build outputs into a single NuGet package
+A packaging project is a **separate** project that gathers multiple build outputs into a single NuGet package
 
 ### When should I make one?
-We highly recommend creating creating a packaging project when you have a project that packs itself, and now needs to package its own multi-targeted or multi-platform outputs.
-
-Other reasons to create a packaging project include:
-- Clean up your project files & separate out build/packaging logic.
-- Help resolve build ordering issues.
+A multi-targeted or multi-platform build that needs to package all of its outputs _requires_ a packaging project. Other reasons include resolving build ordering issues or cleaning up project files by separating out build logic.
 
 ## Step By Step
-1. [Creating the Packaging Project](#1-creating-the-packaging-project)
-1. [Building Your Projects From The Packaging Project](#2-building-your-projects-from-the-packaging-project)
+1. [Create The Packaging Project](#1-creating-the-packaging-project)
+1. [Build Relevant Projects From The Packaging Project](#2-building-your-projects-from-the-packaging-project)
+1. [Gather Build Outputs](#4-gathering-build-outputs)
 1. [Creating the NuGet Package](#3-creating-the-nuget-package)
-1. [Gathering Build Outputs](#4-gathering-build-outputs)
 1. [Customizing Your Package Layout](#5-customizing-your-package-layout)
-
-
 
 ## 1. Create The Packaging Project
 1. Create a new folder, call it `packaging` or whatever name you prefer.
@@ -65,10 +59,12 @@ Output Needed | Suggested Method(s) | Function | Notes
 ------        | --------- | --------- | ------
 The output .dll of a ProjectReference | [OutputItemType](#using-outputitemtype) | Gathers TargetOutputs into new items. | This normally affects the build process because it passes the outputs to the compiler & friends. Thanks to `Microsoft.Build.NoTargets`, there's no need to worry about that here. |
 exe, deps.json, or runtimeconfig.json | [ReferenceOutputAssembly](#using-referenceoutputassembly) | Copies ProjectReference build output into the packaging project's `bin/` directory. | If you care about _absolute minimal_ build steps/copies, you may want to [Manually Gather Outputs](#manually-gathering-other-build-outputs) instead. Sometimes a direct reference to an item is better than copying it over entirely.
-Anything else | 1. [Manually Gather Outputs](#manually-gathering-other-build-outputs) <br/> 2. [Extending OutputItemType](#extending-outputitemtype) |  | There are MANY ways to gather the different types of outputs of a build.
+Generated Files<br/>Everything else | 1. [Manually Gather Outputs](#manually-gathering-other-build-outputs) <br/> 2. [Extending OutputItemType](#extending-outputitemtype) |  | There are MANY ways to gather the different types of outputs of a build.
 
 ### Using OutputItemType
-OutputItemType is described as _Item type to emit target outputs into._ By default, "Target outputs" means the output of the "Build" target, which is the project's dll. See the [official docs](https://learn.microsoft.com/visualstudio/msbuild/common-msbuild-project-items#projectreference) for more details. For details on adding more items into this output, see [Extending OutputItemType](#extending-outputitemtype).
+[Official docs](https://learn.microsoft.com/visualstudio/msbuild/common-msbuild-project-items#projectreference).
+
+OutputItemType is described as _Item type to emit target outputs into._ By default, "Target outputs" means the output of the "Build" target, which is the project's dll.  For details on adding more items into this output, see [Extending OutputItemType](#extending-outputitemtype).
 
 1. First, place OutputItemType metadata on your ProjectReferences. Give them whatever name you like.
 
@@ -96,7 +92,7 @@ Including `ReferenceOutputAssembly=true` on your `ProjectReference` will tell th
 Note: this does _not_ inform the build to copy the `.dll`/`.pdb` over. For the dll, see [Using OutputItemType](#using-outputitemtype).
 
 ### Manually Gathering Build Outputs
-This is a "catch-all" method where you hard-code paths to items.
+This is a "catch-all" method where you hard-code paths to files. The primary benefit here is performance, as it prevents extra copies into the packaging project's output directory. If you care deeply about build performance, this might be ideal for you.
 
 ```xml
 <ItemGroup>
@@ -104,12 +100,10 @@ This is a "catch-all" method where you hard-code paths to items.
 </ItemGroup>
 ```
 
-Sometimes you can't avoid hard-coding paths to certain files. This can often be easier than copying them into the packaging project's build output. If you want absolutely minimal build steps, you'll want to do this rather than copying build outputs into packaging, and packing from there.
+#### Static files vs. Generated Files
+Static files (eg. Source files) are easy to deal with, simply add them to `Content` or `None` under any `ItemGroup`. Generated files, however, must be added to an item type _during execution of the build_. For more on this, read [this gist](https://gist.github.com/BenVillalobos/c671baa1e32127f4ab582a5abd66b005).
 
-### Static files vs. Generated Files
-Static files (eg. Source files) are easy to deal with, simply add them to `Content` or `None` like usual. Generated files, however, must be added to an item type _during execution of the build_. For more on this, read [this gist](https://gist.github.com/BenVillalobos/c671baa1e32127f4ab582a5abd66b005).
-
-## 4. Creating the NuGet Package
+## 4. Create the NuGet Package
 Our packaging project builds its references and gathers their respective outputs. Now, it's time to create the NuGet package.
 
 1. These two properties should allow your project to generate a NuGet package in the `bin/` directory.
@@ -118,20 +112,22 @@ Our packaging project builds its references and gathers their respective outputs
     <PackageId>My.Custom.Package</PackageId>
 ```
 
-For best practices and more properties that affect the NuGet package, see [Package Authoring Best Practices](https://learn.microsoft.com/nuget/create-packages/package-authoring-best-practices)
+For more info on creating NuGet packages, see [Create a NuGet package using MSBuild](https://learn.microsoft.com/nuget/create-packages/creating-a-package-msbuild) or [Package Authoring Best Practices](https://learn.microsoft.com/nuget/create-packages/package-authoring-best-practices).
 
-## 5. Customizing Your Package Layout
-The final step is deciding where each item goes inside the NuGet package. You do this by specifying `PackagePath` metadata on your `Content` items.
+## 5. Customize the Package Layout
+The final step is deciding where each item goes inside the NuGet package. You do this by specifying `PackagePath` metadata on your `Content` or `None` items.
 
 ```xml
     <ItemGroup>
         <Content Include="@(ConsoleAppOutput)" PackagePath="app"/>
         <Content Include="@(ClassLibOutput)" PackagePath="app"/>
         <Content Include="@(OtherLibOutput)" PackagePath="lib/$(TargetFramework)" />
+
+        <None Include="../ClassLib/staticfile.foo" Pack="true" PackagePath="extras" />
     </ItemGroup>
 ```
 
-Note: You may see a `NU5100` complaining about dll's that aren't in a `lib/` folder. If your folder structure is intended to be this way, simply add `NU5100` to the `NoWarn` property.
+Note: You may see a `NU5100` warning about dll's that aren't in a `lib/` folder. If your package does intentionally doesn't [follow NuGet best practices](), simply add `NU5100` to the `NoWarn` property.
 ```xml
     <PropertyGroup>
         <NoWarn>$(NoWarn);NU5100</NoWarn>
