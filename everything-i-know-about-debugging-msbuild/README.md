@@ -7,7 +7,7 @@ Debugging MSBuild is difficult. There are tons of different ways to go about it,
 
 
 ## Debugging into MSBuild
-First, you need to understand [which MSBuild you want to debug into](). Once you know which one, pick your flavor.
+First, you need to understand [which MSBuild you want to debug into](..\the-flavors-of-msbuild\README.md). Once you know which one, pick your flavor.
 
 ### Setting Up Visual Studio for Debugging
 - Open VS
