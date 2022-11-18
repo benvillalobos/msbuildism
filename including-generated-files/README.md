@@ -9,7 +9,7 @@ Files that get generated during the build behave differently from static files (
 ### Execution Phase
 - MSBuild runs Targets & Tasks with the provided Properties & Items in order to perform the build.
 
-**Key Takeaway**: Files generated during execution don't exist during evaluation, therefore they aren't included in the build process.
+**Key Takeaway**: Files generated during execution don't exist during evaluation, therefore they aren't found. This particularly effects files that are globbed by default, such as source files (.cs).
 
 The solution? When the files are generated, manually add them into the build process. The recommended way to do this is by adding the new file to the `Content` or `None` items before the `BeforeBuild` target.
 
