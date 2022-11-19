@@ -85,3 +85,7 @@ Relevant links for custom MSBuild tasks:
 When debugging, it helps to know _exactly_ which dll's are loaded to debug into.
 
 To check this, Debug -> Windows -> Modules. Sort by name, and look for `Microsoft.Build.*.dll` or `MSBuild.dll` to see which dll's are loaded and where they are. If it's pointing to the wrong dll, you can always [set custom symbol paths](#custom-symbol-paths) to manually correct the issue.
+
+
+## Custom SDK + Custom MSBuild
+- 
