@@ -2,7 +2,7 @@
 One of the biggest things devs struggle with is figuring out _exactly_ what caused something to happen in a build. The binlog viewer is your best friend here.
 
 ## The Binlog Viewer
-[The binlog viewer](https://aka.ms/msbuild/binlog) is your best friend when it comes to understanding your build.
+[The binlog viewer](https://aka.ms/msbuild/binlog) is accessible via install or on the web, I recommend installing it.
 
 ## Binlog Viewer Tips & Tricks
 
@@ -34,3 +34,63 @@ This command replays the build log, outputting everything into an `msbuild.log` 
 
 ## See Exactly What Imports MSBuild Sees
 Running `msbuild myproj.csproj /pp:out.xml` will create a single `out.xml` file that combines every project file/import into a single xml file. This can be useful for understanding what gets defined when, and what properties are set where.
+
+
+# Working Backwards To "Figure It Out"
+Everyone's build scenario is unique and complex. Here's a general guide on using a binlog to figure out what items/properties/targets could be modified to solve a problem you might have!
+
+## 1. "A file was copied to X, but not Y"
+Referring to: https://gist.github.com/BenVillalobos/c671baa1e32127f4ab582a5abd66b005?permalink_comment_id=4378272#gistcomment-4378272
+
+Using a binlog to find more info on how to solve this can be tricky.
+
+#### Finding the target that does the copying
+Try searching in the "Search Log" tab for a file you _know_ is copied to a specific directory. Something like `bin\MyApp.dll`, or even just searching `publish\` can help you find something. The targets that copy are usually at the bottom of the results. `_CopyFilesMarkedCopyLocal` and `_CopyResolvedFilesToPublishAlways` are good bets here.
+
+#### Finding the item that gets copied
+Double clicking a target like `_CopyFilesMarkedCopyLocal` will show you its underlying XML. Below is an abbreviated version of `_CopyFilesMarkedCopyLocal`. Notice how it copies the `@(ReferenceCopyLocalPaths)` item? **That** is the item you might want to insert a custom file into.
+
+```xml
+  <Target
+      Name="_CopyFilesMarkedCopyLocal"
+      Condition="'@(ReferenceCopyLocalPaths)' != ''"
+        >
+  ...
+  ...
+      <Copy
+        SourceFiles="@(ReferenceCopyLocalPaths)"
+        DestinationFiles="@(ReferenceCopyLocalPaths->'$(OutDir)%(DestinationSubDirectory)%(Filename)%(Extension)')"
+        SkipUnchangedFiles="$(SkipCopyUnchangedFiles)"
+        OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
+        Retries="$(CopyRetryCount)"
+        RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
+        UseHardlinksIfPossible="$(CreateHardLinksForCopyLocalIfPossible)"
+        UseSymboliclinksIfPossible="$(CreateSymbolicLinksForCopyLocalIfPossible)"
+        Condition="'$(UseCommonOutputDirectory)' != 'true'"
+            >
+
+      <Output TaskParameter="DestinationFiles" ItemName="FileWritesShareable"/>
+      <Output TaskParameter="CopiedFiles" ItemName="ReferencesCopiedInThisBuild"/>
+      <Output TaskParameter="WroteAtLeastOneFile" PropertyName="WroteAtLeastOneFile"/>
+
+    </Copy>
+
+...
+...
+```
+
+#### Inserting Your Own Build Logic
+Thankfully, this is the easiest step. Try something like this:
+
+```xml
+<Target Name="InsertItemsToCopy" BeforeTargets="_CopyFilesMarkedCopyLocal">
+  <ItemGroup>
+    <ReferenceCopyLocalPaths Include="MyGeneratedFile.css" />
+  </ItemGroup>
+</Target>
+```
+
+**NOTE**: There may have been a ton of metadata added to these items throughout the build process, so it's important to know how to "follow the paper trail" to see how an item gets modified throughout the build.
+
+## 2. Following the paper trail
+Will do when there's enough interest.
