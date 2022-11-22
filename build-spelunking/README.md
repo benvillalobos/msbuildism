@@ -45,7 +45,7 @@ Referring to: https://gist.github.com/BenVillalobos/c671baa1e32127f4ab582a5abd66
 Using a binlog to find more info on how to solve this can be tricky.
 
 #### Finding the target that does the copying
-Try searching in the "Search Log" tab for a file you _know_ is copied to a specific directory. Something like `bin\MyApp.dll`, or even just searching `publish\` can help you find something. The targets that copy are usually at the bottom of the results. `_CopyFilesMarkedCopyLocal` and `_CopyResolvedFilesToPublishAlways` are good bets here.
+Try searching in the "Search Log" tab for a file you _know_ is copied to a specific directory. Something like `bin\MyApp.dll`, or even just searching `publish\` can help you find something. The targets that copy are usually at the bottom of the results. `CopyFilesToOutputDirectory`, `_CopyOutOfDateSourceItemsToOutputDirectory`, `_CopyFilesMarkedCopyLocal` and `_CopyResolvedFilesToPublishAlways` are good bets here.
 
 #### Finding the item that gets copied
 Double clicking a target like `_CopyFilesMarkedCopyLocal` will show you its underlying XML. Below is an abbreviated version of `_CopyFilesMarkedCopyLocal`. Notice how it copies the `@(ReferenceCopyLocalPaths)` item? **That** is the item you might want to insert a custom file into.
@@ -80,12 +80,12 @@ Double clicking a target like `_CopyFilesMarkedCopyLocal` will show you its unde
 ```
 
 #### Inserting Your Own Build Logic
-Thankfully, this is the easiest step. Try something like this:
+The difficult part about this is finding the exact target to hook into. The _safest_ bet is go run before `AssignTargetPaths`. Try something like this:
 
 ```xml
-<Target Name="InsertItemsToCopy" BeforeTargets="_CopyFilesMarkedCopyLocal">
+<Target Name="InsertItemsToCopy" BeforeTargets="AssignTargetPaths">
   <ItemGroup>
-    <ReferenceCopyLocalPaths Include="MyGeneratedFile.css" />
+    <Content Include="MyGeneratedFile.css" />
   </ItemGroup>
 </Target>
 ```
