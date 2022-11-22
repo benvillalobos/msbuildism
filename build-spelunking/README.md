@@ -90,6 +90,8 @@ The difficult part about this is finding the exact target to hook into. The _saf
 </Target>
 ```
 
+You can include your file into `EmbeddedResource`, `Content`, `None`, or `BaseApplicationManifest` and have them automatically copied/included in the build.
+
 **NOTE**: There may have been a ton of metadata added to these items throughout the build process, so it's important to know how to "follow the paper trail" to see how an item gets modified throughout the build.
 
 ## 2. Following the paper trail
