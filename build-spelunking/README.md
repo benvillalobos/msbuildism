@@ -87,15 +87,16 @@ Double clicking a target like `_CopyOutOfDateSourceItemsToOutputDirectory` will 
 ```
 
 ### Following the paper trail
-Okay, so `_SourceItemsToCopyToOutputDirectory` is the relevant item, but we don't want to add to it. Let's see how it gets populated. To do this, go to the "Find in Files" tab in the top right of the binlog viewer. From here, search for `<_SourceItemsToCopyToOutputDirectory`. This will find all instances where `_SourceItemsToCopyToOutputDirectory` is defined. Follow the one in `Microsoft.Common.CurrentVersion.targets`, as that is the "main" build logic. 
+Okay, so `_SourceItemsToCopyToOutputDirectory` is the relevant item, but we don't want to add to it because it's private. Let's see how it gets populated. To do this, go to the "Find in Files" tab in the top right of the binlog viewer. From here, search for `<_SourceItemsToCopyToOutputDirectory`. This will find all instances where `_SourceItemsToCopyToOutputDirectory` is defined. Follow the one in `Microsoft.Common.CurrentVersion.targets`, as that is the "main" build logic. 
 
 After searching, we find:
 
 ```xml
-<_SourceItemsToCopyToOutputDirectory Include="@(_TransitiveItemsToCopyToOutputDirectoryPreserveNewest);@(_ThisProjectItemsToCopyToOutputDirectoryPreserveNewest)"/>
+<!-- Simplified for the sake of this explanation -->
+<_SourceItemsToCopyToOutputDirectory Include="@(_ThisProjectItemsToCopyToOutputDirectoryPreserveNewest)"/>
 ```
 
-Ignoring the transitive item (for simplicity), the next piece of the puzzle is `_ThisProjectItemsToCopyToOutputDirectoryPreserveNewest`. Now search for `<_ThisProjectItemsToCopyToOutputDirectoryPreserveNewest`, you'll find:
+The next piece of the puzzle is `_ThisProjectItemsToCopyToOutputDirectoryPreserveNewest`. Now search for `<_ThisProjectItemsToCopyToOutputDirectoryPreserveNewest`, you'll find:
 
 ```xml
 <!-- Simplified for the sake of this explanation -->
