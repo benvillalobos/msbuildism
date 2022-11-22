@@ -80,7 +80,7 @@ Double clicking a target like `_CopyFilesMarkedCopyLocal` will show you its unde
 ```
 
 #### Inserting Your Own Build Logic
-The difficult part about this is finding the exact target to hook into. The _safest_ bet is go run before `AssignTargetPaths`. Try something like this:
+The difficult part about this is finding the exact target to hook into. The _safest_ bet is go [run before `AssignTargetPaths`](..\notable-targets\README.md#assigntargetpaths). Try something like this:
 
 ```xml
 <Target Name="InsertItemsToCopy" BeforeTargets="AssignTargetPaths">
