@@ -177,15 +177,15 @@ You can include your file into `EmbeddedResource`, `Content`, `None`, or `BaseAp
 **NOTE**: If you included your file into an item without really knowing if that was the safest place to include it, it may have weird effects on your build. Generally, you want to find the earliest possible place that the build picks up your items and works its magic on them. See [Notable Targets](..\notable-targets\README.md) for more an idea of where you could hook your build into.
 
 
-# The Breadcrumb Trail
-Go to File -> Start Page and check the box for "Mark search results with a dot in the main tree," you're getting one of the best features in the tool. It's easiest to show in screenshots. Remember that you can double click tasks, targets, and imports to view the underlying XML.
+## The Breadcrumb Trail
+When you know what item you're looking for, and need to follow where its been and what modified it, the breadcrumb trail helps tremendously. It's easiest to show in screenshots. Remember that you can double click tasks, targets, and imports to view the underlying XML.
+
+Don't forget to go to File -> Start Page and check the box for "Mark search results with a dot in the main tree" to enable one of the best features in the tool. 
 
 #### Find Targets & Tasks that Process Specific Items
-
 <img width="627" alt="image" src="https://user-images.githubusercontent.com/4691428/203628564-bfc805cb-b18c-468e-9b05-8ff67dc014ac.png">
 
 #### Find Where Files Get Imported
-
 <img width="700" alt="image" src="https://user-images.githubusercontent.com/4691428/203628840-765d0ae5-6321-4ca9-a04c-e29c52511fad.png">
 
 #### Find When Metadata Gets Added To An Item
