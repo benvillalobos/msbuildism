@@ -1,31 +1,67 @@
 # Understanding The Build
 One of the biggest things devs struggle with is figuring out _exactly_ what caused something to happen in a build. The binlog viewer is your best friend here.
 
-## The Binlog Viewer
-[The binlog viewer](https://aka.ms/msbuild/binlog) is accessible via install or on the web, I recommend installing it.
+## The Binlog Viewer Tips & Tricks
+[The binlog viewer](https://aka.ms/msbuild/binlog) is accessible via install or on the web, I recommend installing it. Be warned, it logs environment variables which might contain secrets!
 
-## Binlog Viewer Tips & Tricks
+**Enable these features in the binlog viewer ASAP**
 
-#### Enable these features in the binlog viewer ASAP
 1. Open the binlog viewer or go to File -> Start Page
 1. Check all the boxes. Particularly "Mark search results with a dot in the main tree"
 
-Now when you search for "Program.cs", the main view will show a dot for every instance where Program.cs showed up. This is extremely useful for chasing down items and how they change throughout the build.
+Now, when you search for "Program.cs", the main view will show a dot for every instance where Program.cs showed up. This is extremely useful for chasing down items and how they change throughout the build.
 
-#### "Go to Definition" on a Property
-Let's say you want to "Go to Definition" on a property or find places where a property could be overwritten. We can take advantage project files and look up a property based on how it must be defined in XML.
+## "Go to Definition"
+"Go to definition" can be tricky because items & properties are typically defined based on _other_ properties & items. "Go to definition" quickly becomes "Go to _next_ definition". The perfect example is during the `AssignTargetPaths` target, where `ContentWithTargetPath` is defined by all `Content` items. The build effectively "ignores" `Content` from here on out.
 
-Let's use `TargetFramework` as an example:
+```xml
+
+```
+
+Let's say you want to "Go to Definition" on a property or find all the places a property is overidden. Take advantage of XML and search based on how it must be defined.
+
+#### "Go to Definition" on Properties
+Note properties can also be search based on their usage: `$(TargetFramework)`.
+
+Using `TargetFramework` as an example:
 
 - Open a binlog
 - Go to the `Find in Files` tab
 - Search <TargetFramework>
 
-Suddenly you'll see every instance within a build that would set the property `TargetFramework`. This is useful for finding where the value could be overridden as well. Combine this with [Seeing what imports MSBuild sees]() and you can know exactly when a property is set to a particular value.
+Suddenly you'll see every instance within a build that would set the property `TargetFramework`. Combine this with [Seeing what imports MSBuild sees]() and you can find exactly when a property is set to a particular value.
 
-Let's say you don't know the full property name. It's `BaseOutput<Something>` for example. Just look up `<BaseOutput` and you'll find all definitions for properties that start with "BaseOutput".
+#### "Go to Definition" on Item
+Note you can search `@(Content)` to find every usage of an item.
 
-#### Replay Your Binlog
+Remember that items can be defined many times and have many values stored in it. Items sometimes "change identities" and become other items, like `ContentWithTargetPath` being defined based entirely on `Content`.
+
+Items can be searched the same way as Properties _and_ Targets, because an item can be defined in an itemgroup and as an output of a task.
+
+```xml
+  <!-- Adding Foo.cs to @(Content) -->
+  <ItemGroup>
+    <Content Include="Foo.cs"/>
+  </ItemGroup>
+
+  <!-- AssignTargetPath takes all @(Content) items, assigns `TargetPath` metadata to them, and outputs them into `ContentWithTargetPath` as part of the standard build process. -->
+  <AssignTargetPath Files="@(Content)" RootFolder="$(MSBuildProjectDirectory)">
+    <Output TaskParameter="AssignedFiles" ItemName="ContentWithTargetPath" />
+  </AssignTargetPath>
+```
+
+Based on this, we can search `<Content` to find a definition of `@(Compile)` and `"ContentWithTargetPath"` (quoted) to find it defined as an output item.
+
+#### "Go to Definition" on Target
+Searching for quoted string is how I typically search for the definitions of targets: `"Build"`, `"ResolveProjectReferences"`.
+
+#### "Go to Definition" on everything
+You can use partial names and look for MSBuild syntax too: `<Base`, `Path/>`, `<Compile`, `[MSBuild]::`, all find interesting results. 
+
+#### "Go to Definition" Example
+[Following the Paper Trail](#following-the-paper-trail)
+
+## Replay Your Binlog
 The binlog is amazing, but it isn't perfect. Sometimes not all logged information gets stored in the binlog. If you're concerned you may have fallen into this case, you can replay your binlog.
 
 `msbuild msbuild.binlog /flp:v=diag`
@@ -42,13 +78,20 @@ Everyone's build scenario is unique and complex. Here's a general guide on using
 ## 1. "A file was copied to X, but not Y"
 Referring to: https://gist.github.com/BenVillalobos/c671baa1e32127f4ab582a5abd66b005?permalink_comment_id=4378272#gistcomment-4378272
 
-You often don't have control over the "default build" logic, so working around this generally involves finding that logic and inserting your logic before it. Here's what's happening (at a high level):
+You often don't have control over the "default build" logic, so working around this generally involves finding that logic and inserting yours before it. Here's what's happening (at a high level):
 
 1. Some "copy to the output/publish directory" **target** runs
-1. That target copies **items** into Y.
-1. Your file is missing from that item.
+1. That target attempts to copy **items** into Y.
+1. At the time your file should have been copied unless:
+  - Your file did not exist
+  - Your file did exist, and was not in the item.
+  - Your file did exist and was in the item, but was missing some sort of metadata. My first guess would `TargetPath`.
 
-So the solution then, is the following:
+### Your file exists, but is not in the item
+
+Your solution is to figure out how to insert your file into the build in such a way that it isn't left behind.
+
+The step by step:
 
 1. Find the target that does the copying.
 1. Find the item used by that target to copy.
@@ -86,8 +129,8 @@ Double clicking a target like `_CopyOutOfDateSourceItemsToOutputDirectory` will 
   </Target>
 ```
 
-### Following the paper trail
-Okay, so `_SourceItemsToCopyToOutputDirectory` is the relevant item, but we don't want to add to it because it's private. Let's see how it gets populated. To do this, go to the "Find in Files" tab in the top right of the binlog viewer. From here, search for `<_SourceItemsToCopyToOutputDirectory`. This will find all instances where `_SourceItemsToCopyToOutputDirectory` is defined. Follow the one in `Microsoft.Common.CurrentVersion.targets`, as that is the "main" build logic. 
+### Following the Paper Trail
+`_CopyOutOfDateSourceItemsToOutputDirectory` is the target and `_SourceItemsToCopyToOutputDirectory` is the item, but you want to avoid modifying "private" items unless you _really_ know what you're doing. The next step is to figure out how `_SourceItemsToCopyToOutputDirectory` gets populated. To do this, go to the "Find in Files" tab in the top right of the binlog viewer. From here, search for `<_SourceItemsToCopyToOutputDirectory`. This will find all instances where `_SourceItemsToCopyToOutputDirectory` is defined. Follow the one in `Microsoft.Common.CurrentVersion.targets`, as that is the "main" build logic. 
 
 After searching, we find:
 
@@ -145,4 +188,6 @@ The difficult part about this is finding the exact target to hook into. The _saf
 
 You can include your file into `EmbeddedResource`, `Content`, `None`, or `BaseApplicationManifest` and have them automatically copied/included in the build.
 
-**NOTE**: If you included your file into an item without really knowing if that was the safest place to include it, it may have weird effects on your build. Generally, you want to find the earliest possible place that the build picks up your items and works its magic on them. See [Notable Targets](..\notable-targets\README.md) for more details.
+**NOTE**: If you included your file into an item without really knowing if that was the safest place to include it, it may have weird effects on your build. Generally, you want to find the earliest possible place that the build picks up your items and works its magic on them. See [Notable Targets](..\notable-targets\README.md) for more an idea of where you could hook your build into.
+
+## Breadcrumb Trail
