@@ -1,4 +1,13 @@
-# The Basics
+# MSBuildism
+Because MSBuild is just as complex as it is powerful, it has its own quirks that we can collectively call "msbuildisms."
+
+Your incremental build broke for seemingly no reason? Call it an MSBuildism. You changed one property and are getting the most random build failures? Yep, that's an MSBuildism.
+
+This repo is a collection of what I've learned in my ~4 years on the MSBuild team ❤️.
+
+# The Absolute Basics
+
+- [Useful Tools](tools-and-resources\README.md)
 
 ## How to Use MSBuild
 For the MSBuild in Visual Studio, you want to run a `Developer Command Prompt`. This should install along with VS. You call MSBuild directly via `msbuild`.
