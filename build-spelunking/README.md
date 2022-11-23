@@ -12,7 +12,7 @@ One of the biggest things devs struggle with is figuring out _exactly_ what caus
 Now, when you search for "Program.cs", the main view will show a dot for every instance where Program.cs showed up. This is extremely useful for chasing down items and how they change throughout the build.
 
 ## "Go to Definition"
-"Go to definition" can be tricky because items & properties are typically defined based on _other_ properties & items. "Go to definition" quickly becomes "Go to _next_ definition". The perfect example is during the `AssignTargetPaths` target, where `ContentWithTargetPath` is defined by all `Content` items. The build effectively "ignores" `Content` from here on out.
+"Go to definition" can be tricky because items & properties are typically defined based on _other_ properties & items. Not to mention, they're often defined in different files. "Go to definition" quickly becomes "Go to _next_ definition". The perfect example is during the `AssignTargetPaths` target, [where `ContentWithTargetPath` is defined by all `Content` items](#go-to-definition-on-items). The build effectively "ignores" `Content` from here on out.
 
 ```xml
 
@@ -31,7 +31,7 @@ Using `TargetFramework` as an example:
 
 Suddenly you'll see every instance within a build that would set the property `TargetFramework`. Combine this with [Seeing what imports MSBuild sees]() and you can find exactly when a property is set to a particular value.
 
-#### "Go to Definition" on Item
+#### "Go to Definition" on Items
 Note you can search `@(Content)` to find every usage of an item.
 
 Remember that items can be defined many times and have many values stored in it. Items sometimes "change identities" and become other items, like `ContentWithTargetPath` being defined based entirely on `Content`.
@@ -83,11 +83,12 @@ You often don't have control over the "default build" logic, so working around t
 1. Some "copy to the output/publish directory" **target** runs
 1. That target attempts to copy **items** into Y.
 1. At the time your file should have been copied unless:
-  - Your file did not exist
-  - Your file did exist, and was not in the item.
-  - Your file did exist and was in the item, but was missing some sort of metadata. My first guess would `TargetPath`.
+  - Your file did not exist (see [Including Generated Files](..\including-generated-files\README.md))
+  - Your file did exist, and was not in the item (see below).
+  - Your file did exist and was in the item, but was missing some sort of metadata. (See [Breadcrumb Trail](#breadcrumb-trail))
+    - My first guesses would be `TargetPath` or `FullPath`.
 
-### Your file exists, but is not in the item
+#### Your file exists, but is not in the item
 
 Your solution is to figure out how to insert your file into the build in such a way that it isn't left behind.
 
@@ -99,10 +100,10 @@ The step by step:
 1. Create a target that runs before your target from step 3.
 1. Include your file into that item.
 
-#### Finding the target that does the copying
+#### 1. Finding the target that does the copying
 Try searching in the "Search Log" tab for a file you _know_ is copied to a specific directory. Something like `bin\MyApp.dll`, or even just searching `publish\` can help you find something. The targets that copy are usually at the bottom of the results. `CopyFilesToOutputDirectory`, `_CopyOutOfDateSourceItemsToOutputDirectory`, `_CopyFilesMarkedCopyLocal` and `_CopyResolvedFilesToPublishAlways` are good bets here.
 
-#### Finding the item that gets copied
+#### 2. Finding the item that gets copied
 Double clicking a target like `_CopyOutOfDateSourceItemsToOutputDirectory` will show you its underlying XML. Below is an abbreviated version of `_CopyOutOfDateSourceItemsToOutputDirectory`. Notice how it copies the `@(_SourceItemsToCopyToOutputDirectory)` item? This item isn't exactly safe to add directly to. Notice it's marked with an underscore, that implies "private msbuild item, don't use it". At this point, you need to "follow the paper trail" to see how _that_ item gets populated.
 
 ```xml
@@ -129,8 +130,8 @@ Double clicking a target like `_CopyOutOfDateSourceItemsToOutputDirectory` will 
   </Target>
 ```
 
-### Following the Paper Trail
-`_CopyOutOfDateSourceItemsToOutputDirectory` is the target and `_SourceItemsToCopyToOutputDirectory` is the item, but you want to avoid modifying "private" items unless you _really_ know what you're doing. The next step is to figure out how `_SourceItemsToCopyToOutputDirectory` gets populated. To do this, go to the "Find in Files" tab in the top right of the binlog viewer. From here, search for `<_SourceItemsToCopyToOutputDirectory`. This will find all instances where `_SourceItemsToCopyToOutputDirectory` is defined. Follow the one in `Microsoft.Common.CurrentVersion.targets`, as that is the "main" build logic. 
+#### 3. Following the Paper Trail
+`_CopyOutOfDateSourceItemsToOutputDirectory` is the target and `_SourceItemsToCopyToOutputDirectory` is the item, but you want to avoid modifying "private" items unless you _really_ know what you're doing. The next step is to figure out how `_SourceItemsToCopyToOutputDirectory` gets populated. We're going to ["Go to Definition"](#go-to-definition-on-items) on the `<_SourceItemsToCopyToOutputDirectory` item. This will find all instances where `_SourceItemsToCopyToOutputDirectory` is defined. Follow the one in `Microsoft.Common.CurrentVersion.targets`, as that is the "main" build logic. 
 
 After searching, we find:
 
@@ -139,17 +140,19 @@ After searching, we find:
 <_SourceItemsToCopyToOutputDirectory Include="@(_ThisProjectItemsToCopyToOutputDirectoryPreserveNewest)"/>
 ```
 
-The next piece of the puzzle is `_ThisProjectItemsToCopyToOutputDirectoryPreserveNewest`. Now search for `<_ThisProjectItemsToCopyToOutputDirectoryPreserveNewest`, you'll find:
+The next piece of the puzzle is `_ThisProjectItemsToCopyToOutputDirectoryPreserveNewest`. ["Go to Definition"](#go-to-definition-on-items) on `_ThisProjectItemsToCopyToOutputDirectoryPreserveNewest` to find:
 
 ```xml
 <!-- Simplified for the sake of this explanation -->
 <_ThisProjectItemsToCopyToOutputDirectoryPreserveNewest Include="@(_ThisProjectItemsToCopyToOutputDirectory->'%(FullPath)')" />
 ```
 
-Repeat the process one more time and you'll find these lines:
+Finally, ["Go to Definition'](#go-to-definition-on-items) on `_ThisProjectItemsToCopyToOutputDirectory`:
 
 ```xml
-    <!-- HEAVILY simplified for the sake of this explanation, but the point is `_ThisProjectItemsToCopyToOutputDIrectory` consists of the items listed in the Include. -->
+    <!-- HEAVILY simplified for the sake of this explanation, but the point is `_ThisProjectItemsToCopyToOutputDIrectory`
+         consists of `ContentWithTargetPath`, `EmbeddedResource`, `_CompileItemsToCopyWithTargetPath`, and `_NoneWithTargetPath`
+     -->
     <ItemGroup>
       <_ThisProjectItemsToCopyToOutputDirectory Include="@(ContentWithTargetPath->'%(FullPath)')"/>
       <_ThisProjectItemsToCopyToOutputDirectory Include="@(EmbeddedResource->'%(FullPath)')"/>
@@ -158,9 +161,7 @@ Repeat the process one more time and you'll find these lines:
     </ItemGroup>
 ```
 
-Each of these can be followed, but all of them bubble up to [the `AssignTargetPaths` target](), and originate from the `None`, `Content`, `Compile`, and `EmbeddedResource` items.
-
-You can do this process with virtually any item. It gets a lot more difficult to follow in more complex builds, where the build logic goes between different files and based on different imports, etc. But this is a good baseline that should help you figure out a lot of workarounds for yourself.
+You can follow these yourself, they all bubble up to [the `AssignTargetPaths` target](..\notable-targets\README.md#assigntargetpaths) and originate from the `None`, `Content`, `Compile`, and `EmbeddedResource` items.
 
 #### Inserting Your Own Build Logic
 The difficult part about this is finding the exact target to hook into. The _safest_ bet is go [run before `AssignTargetPaths`](..\notable-targets\README.md#assigntargetpaths). Try something like this:
