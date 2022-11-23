@@ -16,30 +16,27 @@ To generate a binlog, pass `/bl` to `msbuild` or `dotnet build` or set environme
 Now, when you search for "Program.cs", the main view will show a dot for every instance where Program.cs showed up. This is extremely useful for chasing down items and how they change throughout the build.
 
 ## "Go to Definition"
-Unless you're using [MonoDevelop.MSBuildEditor](https://github.com/mhutch/MonoDevelop.MSBuildEditor), you simply _can't_ "Go to Definition" on anything. Given that finding definitions of items is crucial, here's how I go about it.
+If you're using [MonoDevelop.MSBuildEditor](https://github.com/mhutch/MonoDevelop.MSBuildEditor), you'll have "go to definition" built right into VS. Looking through logs, however, won't have this functionality. Here's how I go about tracking things down.
 
-Tirst, "go to definition" can be tricky because items & properties are typically defined based on _other_ items & properties. Not to mention, they're often defined in different files. "Go to definition" quickly becomes a rabbit hole in these scenarios. The perfect example is in the `AssignTargetPaths` target, [where `ContentWithTargetPath` is defined entirely of `Content` items](#go-to-definition-on-items). `Content` effectively "shifts into" `ContentWithTargetPath`, and the build effectively "ignores" `Content` from there on out.
+First thing to mention is that "go to definition" is tricky because items & properties are typically defined based on _other_ items & properties. Not to mention, they're often defined in different files. "Go to definition" quickly becomes a rabbit hole in these scenarios. The perfect example is in the `AssignTargetPaths` target, [where `ContentWithTargetPath` is defined entirely of `Content` items](#go-to-definition-on-items). `Content` effectively "shifts into" `ContentWithTargetPath`, and the build effectively "ignores" `Content` from there on out.
 
-"Go to definition" is done slightly differently depending on the item you want to find. It's worth mentioning [MonoDevelop.MSBuildEditor](https://github.com/mhutch) has this feature built into it, but if you're looking through binlogs then this section should be useful to you.
+"Go to definition" is done slightly differently depending on the item you want to find. Use the **Find in Files** tab of the binlog viewer for these examples.
 
 #### "Go to Definition" on Properties
 Note properties can also be search based on their usage: `$(TargetFramework)`.
 
-Using `TargetFramework` as an example:
-
-- Open a binlog
-- Go to the `Find in Files` tab
-- Search <TargetFramework>
+Using `TargetFramework` as an example, try searching `<TargetFramework>` in the "Find in Files" tab.
 
 Suddenly you'll see every instance within a build that would set the property `TargetFramework`. Combine this with [Seeing what imports MSBuild sees]() and you can find exactly when a property is first created and where it's overidden.
 
 #### "Go to Definition" on Items
 Note you can search `@(Content)` to find every usage of an item.
 
-Remember that items can be defined many times and have many values stored in it. Items sometimes "change identities" and become other items, like `ContentWithTargetPath` being defined based entirely on `Content`.
+Remember that items can be defined many times and have many values stored in it. There's typically no single definition of an item, so you'll have more to dig through here. Items also sometimes "change identities" and become other items, like `ContentWithTargetPath` being defined based entirely on `Content` (see below).
 
-Items can be searched the same way as Properties _and_ Targets, because an item can be defined in an itemgroup and as an output of a task.
+Based on how items can be defined, we can search `<Content` to find a definition of a `Compile` item and `"ContentWithTargetPath"` (quoted) to find it defined as an output item.
 
+An example of the two ways items can be defined:
 ```xml
   <!-- Adding Foo.cs to @(Content) -->
   <ItemGroup>
@@ -52,16 +49,21 @@ Items can be searched the same way as Properties _and_ Targets, because an item 
   </AssignTargetPath>
 ```
 
-Based on this, we can search `<Content` to find a definition of a `Compile` item and `"ContentWithTargetPath"` (quoted) to find it defined as an output item.
-
 #### "Go to Definition" on Targets
 Searching for quoted string is how I typically search for the definitions of targets: `"Build"`, `"ResolveProjectReferences"`.
 
-#### "Go to Definition", or "Find references" on everything else
-You can use partial names and look for MSBuild syntax too: `<Base`, `Path/>`, `<Compile`, `[MSBuild]::`, `@(Compile)`. 
+#### "Go to Partial Definition"
+You can use partial names and look for MSBuild syntax too: `<Base`, `Path/>`, `<Compile`.
 
 #### "Go to Definition" Example
 [Following the Paper Trail](#following-the-paper-trail)
+
+## "Find All References"
+If you want to find every place in the build that _uses_ a specific item/property/metadata, search for them like so:
+- Item: `@(Content)`
+- Property: `$(TargetFramework)`
+- Metadata: `%(Identity)`, or `%(Content.FullPath)`
+- Intrinsic Functions: `[MSBuild]::GetTargetFrameworkIdentifier`
 
 ## Replay Your Binlog
 The binlog is amazing, but it isn't perfect. The binlog may store the entire log, but sometimes it doesn't display _everything_. If you're concerned you may have fallen into this case, you can replay your binlog.
