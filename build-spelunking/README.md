@@ -149,24 +149,11 @@ The next piece of the puzzle is `_ThisProjectItemsToCopyToOutputDirectoryPreserv
 Repeat the process one more time and you'll find these lines:
 
 ```xml
-    <!-- Simplified for the sake of this explanation -->
+    <!-- HEAVILY simplified for the sake of this explanation, but the point is `_ThisProjectItemsToCopyToOutputDIrectory` consists of the items listed in the Include. -->
     <ItemGroup>
       <_ThisProjectItemsToCopyToOutputDirectory Include="@(ContentWithTargetPath->'%(FullPath)')"/>
-      <_ThisProjectItemsToCopyToOutputDirectory Include="@(ContentWithTargetPath->'%(FullPath)')"/>
-    </ItemGroup>
-
-    <ItemGroup>
       <_ThisProjectItemsToCopyToOutputDirectory Include="@(EmbeddedResource->'%(FullPath)')"/>
-      <_ThisProjectItemsToCopyToOutputDirectory Include="@(EmbeddedResource->'%(FullPath)')"/>
-    </ItemGroup>
-
-    <ItemGroup>
       <_ThisProjectItemsToCopyToOutputDirectory Include="@(_CompileItemsToCopyWithTargetPath)"/>
-      <_ThisProjectItemsToCopyToOutputDirectory Include="@(_CompileItemsToCopyWithTargetPath)"/>
-    </ItemGroup>
-
-    <ItemGroup>
-      <_ThisProjectItemsToCopyToOutputDirectory Include="@(_NoneWithTargetPath->'%(FullPath)')"/>
       <_ThisProjectItemsToCopyToOutputDirectory Include="@(_NoneWithTargetPath->'%(FullPath)')"/>
     </ItemGroup>
 ```
