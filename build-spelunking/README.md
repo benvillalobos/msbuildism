@@ -1,5 +1,5 @@
 ## Understanding The Build
-One of the biggest things devs struggle with is figuring out _exactly_ what caused something to happen in a build. The binlog viewer is your best friend here. Shoutout to [Kirill Osenkov](https://github.com/KirillOsenkov) for creating such an amazing tool!
+One of the biggest things devs struggle with is figuring out _exactly_ what caused something to happen in a build. Thankfully, there are a few tools that are super useful for navigating builds. Shoutout to [Kirill Osenkov](https://github.com/KirillOsenkov) for creating the [MSBuild Structured Log Viewer](https://msbuildlog.com/), and  [Mikayla Hutchison](https://github.com/mhutch), who made [MonoDevelop.MSBuildEditor](https://github.com/mhutch/MonoDevelop.MSBuildEditor)!
 
 # Binlog Viewer Tips & Tricks
 [The binlog viewer](https://aka.ms/msbuild/binlog) is _fundamental_ in understanding your build these days. A text log may always be the source of truth, but the binlog viewer has some amazing features built into it.
@@ -16,9 +16,11 @@ To generate a binlog, pass `/bl` to `msbuild` or `dotnet build` or set environme
 Now, when you search for "Program.cs", the main view will show a dot for every instance where Program.cs showed up. This is extremely useful for chasing down items and how they change throughout the build.
 
 ## "Go to Definition"
-"Go to definition" can be tricky because items & properties are typically defined based on _other_ properties & items. Not to mention, they're often defined in different files. "Go to definition" quickly becomes "Go to _next_ definition". The perfect example is during the `AssignTargetPaths` target, [where `ContentWithTargetPath` is defined by all `Content` items](#go-to-definition-on-items). The build effectively "ignores" `Content` from there on out.
+Unless you're using [MonoDevelop.MSBuildEditor](https://github.com/mhutch/MonoDevelop.MSBuildEditor), you simply _can't_ "Go to Definition" on anything. Given that finding definitions of items is crucial, here's how I go about it.
 
-Let's say you want to "Go to Definition" on a Property, Item, or Target.. Perform searches based on how various build concepts are defined. I'll lay it out in too much detail below.
+Tirst, "go to definition" can be tricky because items & properties are typically defined based on _other_ items & properties. Not to mention, they're often defined in different files. "Go to definition" quickly becomes a rabbit hole in these scenarios. The perfect example is in the `AssignTargetPaths` target, [where `ContentWithTargetPath` is defined entirely of `Content` items](#go-to-definition-on-items). `Content` effectively "shifts into" `ContentWithTargetPath`, and the build effectively "ignores" `Content` from there on out.
+
+"Go to definition" is done slightly differently depending on the item you want to find. It's worth mentioning [MonoDevelop.MSBuildEditor](https://github.com/mhutch) has this feature built into it, but if you're looking through binlogs then this section should be useful to you.
 
 #### "Go to Definition" on Properties
 Note properties can also be search based on their usage: `$(TargetFramework)`.
