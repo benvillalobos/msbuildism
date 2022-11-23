@@ -78,7 +78,7 @@ Running `msbuild myproj.csproj /pp:out.xml` will create a single `out.xml` file 
 # Working Backwards To "Figure It Out"
 Everyone's build scenario is unique and complex. Here's a general guide on using a binlog to figure out what items/properties/targets could be modified to solve a problem you might have!
 
-## 1. "A file was copied to X, but not Y"
+## "A file was copied to X, but not Y"
 Referring to: https://gist.github.com/BenVillalobos/c671baa1e32127f4ab582a5abd66b005?permalink_comment_id=4378272#gistcomment-4378272
 
 You often don't have control over the "default build" logic, so working around this generally involves finding that logic and inserting yours before it. Here's what's happening (at a high level):
@@ -180,12 +180,17 @@ You can include your file into `EmbeddedResource`, `Content`, `None`, or `BaseAp
 # The Breadcrumb Trail
 Go to File -> Start Page and check the box for "Mark search results with a dot in the main tree," you're getting one of the best features in the tool. It's easiest to show in screenshots. Remember that you can double click tasks, targets, and imports to view the underlying XML.
 
-It's useful for finding targets & tasks process which items & properties:
+#### Find Targets & Tasks that Process Specific Items
 
 <img width="627" alt="image" src="https://user-images.githubusercontent.com/4691428/203628564-bfc805cb-b18c-468e-9b05-8ff67dc014ac.png">
 
-It's also useful for finding where exactly a file got imported:
+#### Find Where Files Get Imported
 
 <img width="700" alt="image" src="https://user-images.githubusercontent.com/4691428/203628840-765d0ae5-6321-4ca9-a04c-e29c52511fad.png">
 
 #### Find When Metadata Gets Added To An Item
+Sometimes you need to find when an item got a specific piece of metadata. To do this, search for the item you're looking for and expand every piece of the breadcrumb trail down to the metadata. I start from the bottom of the log and work my way up until the metadata I'm looking for no longer exists. You can do this the reverse way as well.
+
+This screenshot isn't pretty, but notice how `StringTools.csproj` has 10 metadata attached to it by the end of the `_SplitProjectReferencesByExistence` target, but by the end of `_GetProjectReferenceTargetFrameworkProperties` that same item has **24 metadata**! This is why you want to inject items into the build as early as possible and allow the standard build process to do its thing.
+
+<img width="854" alt="image" src="https://user-images.githubusercontent.com/4691428/203640299-84f58465-c92e-4ce0-af0c-d7ffda9bcc19.png">
