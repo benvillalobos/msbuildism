@@ -190,4 +190,8 @@ You can include your file into `EmbeddedResource`, `Content`, `None`, or `BaseAp
 
 **NOTE**: If you included your file into an item without really knowing if that was the safest place to include it, it may have weird effects on your build. Generally, you want to find the earliest possible place that the build picks up your items and works its magic on them. See [Notable Targets](..\notable-targets\README.md) for more an idea of where you could hook your build into.
 
+
 ## Breadcrumb Trail
+TODO
+
+Following the dots.
