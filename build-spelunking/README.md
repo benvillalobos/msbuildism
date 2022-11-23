@@ -176,11 +176,10 @@ You can include your file into `EmbeddedResource`, `Content`, `None`, or `BaseAp
 
 
 # The Breadcrumb Trail
-1. Go to File -> Start Page
-When you check the box for "Mark search results with a dot in the main tree," you're getting one of the best features in the tool. It's easiest to show in screenshots.
+Go to File -> Start Page and check the box for "Mark search results with a dot in the main tree," you're getting one of the best features in the tool. It's easiest to show in screenshots. Remember that you can double click tasks, targets, and imports to view the underlying XML.
 
-It's useful for finding where exactly a file got imported:
-TODO
+It's useful for finding targets & tasks process which items & properties:
+<img width="627" alt="image" src="https://user-images.githubusercontent.com/4691428/203628564-bfc805cb-b18c-468e-9b05-8ff67dc014ac.png">
 
-And finding what targets & tasks process which items & properties:
-TODO
+It's also useful for finding where exactly a file got imported:
+<img width="700" alt="image" src="https://user-images.githubusercontent.com/4691428/203628840-765d0ae5-6321-4ca9-a04c-e29c52511fad.png">
