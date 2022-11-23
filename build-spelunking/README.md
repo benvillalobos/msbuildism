@@ -1,16 +1,14 @@
 ## Understanding The Build
-One of the biggest things devs struggle with is figuring out _exactly_ what caused something to happen in a build. The binlog viewer is your best friend here.
+One of the biggest things devs struggle with is figuring out _exactly_ what caused something to happen in a build. The binlog viewer is your best friend here. Shoutout to [Kirill Osenkov](https://github.com/KirillOsenkov) for creating such an amazing tool!
 
 # Binlog Viewer Tips & Tricks
 [The binlog viewer](https://aka.ms/msbuild/binlog) is _fundamental_ in understanding your build these days. A text log may always be the source of truth, but the binlog viewer has some amazing features built into it.
 
-Passing `/bl` to `msbuild` or `dotnet build` will generate a `msbuild.binlog` containing the results of your build. Open it [in the browser](https://live.msbuildlog.com/), or after [use the Binlog Viewer](https://msbuildlog.com/).
+To generate a binlog, pass `/bl` to `msbuild` or `dotnet build` or set environment variable `MSBUILDDEBUGENGINE` to 1 and build. You can open the generated binlog [in the browser](https://live.msbuildlog.com/) or with [the Binlog Viewer](https://msbuildlog.com/). Using `MSBUILDDEBUGENGINE` is considered "maximal logging" that includes interprocess communication and other things. These logs are output to an `MSBuild_Logs` folder in the current directory or the path specified by the `MSBUILDDEBUGPATH` environment variable when set.
 
-Shoutout to [Kirill Osenkov](https://github.com/KirillOsenkov) for creating such an amazing tool!
+**Obligatory:** Be careful when sharing a binary logs. If secrets are stored in environment variables or properties, they'll show up in the log!
 
-**Note:** The binlog viewer logs all environment variables, so providing one out in the open might be a security risk.
-
-**Enable these features in the binlog viewer ASAP**
+#### Enable these features in the binlog viewer ASAP
 
 1. Open the binlog viewer or go to File -> Start Page
 2. Check all the boxes. "Mark search results with a dot in the main tree" is a must.
@@ -52,23 +50,23 @@ Items can be searched the same way as Properties _and_ Targets, because an item 
   </AssignTargetPath>
 ```
 
-Based on this, we can search `<Content` to find a definition of `@(Compile)` and `"ContentWithTargetPath"` (quoted) to find it defined as an output item.
+Based on this, we can search `<Content` to find a definition of a `Compile` item and `"ContentWithTargetPath"` (quoted) to find it defined as an output item.
 
-#### "Go to Definition" on Target
+#### "Go to Definition" on Targets
 Searching for quoted string is how I typically search for the definitions of targets: `"Build"`, `"ResolveProjectReferences"`.
 
-#### "Go to Definition" on everything
-You can use partial names and look for MSBuild syntax too: `<Base`, `Path/>`, `<Compile`, `[MSBuild]::`. 
+#### "Go to Definition", or "Find references" on everything else
+You can use partial names and look for MSBuild syntax too: `<Base`, `Path/>`, `<Compile`, `[MSBuild]::`, `@(Compile)`. 
 
 #### "Go to Definition" Example
 [Following the Paper Trail](#following-the-paper-trail)
 
 ## Replay Your Binlog
-The binlog is amazing, but it isn't perfect. Sometimes not all logged information gets stored in the binlog. If you're concerned you may have fallen into this case, you can replay your binlog.
+The binlog is amazing, but it isn't perfect. The binlog may store the entire log, but sometimes it doesn't display _everything_. If you're concerned you may have fallen into this case, you can replay your binlog.
 
 `msbuild msbuild.binlog /flp:v=diag`
 
-This command replays the build log, outputting everything into an `msbuild.log` file. This may show things that were logged that did not show up in the binlog viewer.
+This command replays the build log, and outputs everything into an `msbuild.log` text file. As always, the raw text log is the source of truth.
 
 # See what MSBuild Sees
 Running `msbuild myproj.csproj /pp:out.xml` will create a single `out.xml` file that combines every project file/import into a single xml file. This can be useful for understanding what gets defined when, and what properties are set where.
