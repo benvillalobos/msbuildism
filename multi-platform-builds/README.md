@@ -19,8 +19,8 @@ Add two `ProjectReference` items with the following metadata.
 
 ```xml
 <ItemGroup>
-        <ProjectReference Include="../MyApp/MyApp.csproj" Private="false" SetPlatform="Platform=x64" OutputItemType="x64Output" />
-        <ProjectReference Include="../MyApp/MyApp.csproj" Private="false" SetPlatform="Platform=arm64" OutputItemType="arm64Output" />
+    <ProjectReference Include="../MyApp/MyApp.csproj" Private="false" SetPlatform="Platform=x64" OutputItemType="x64Output" />
+    <ProjectReference Include="../MyApp/MyApp.csproj" Private="false" SetPlatform="Platform=arm64" OutputItemType="arm64Output" />
 </ItemGroup>
 ```
 
