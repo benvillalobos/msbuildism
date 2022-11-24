@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.Build.NoTargets/3.6.0">
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <!-- Common output directory for each output -->
+        <OutDir>bin\</OutDir>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="../MyApp/MyApp.csproj" Private="false" SetPlatform="Platform=x64" OutputItemType="x64Output" />
+        <ProjectReference Include="../MyApp/MyApp.csproj" Private="false" SetPlatform="Platform=arm64" OutputItemType="arm64Output" />
+    </ItemGroup>
+
+    <Target Name="AddOutputsToBeCopied" DependsOnTargets="ResolveProjectReferences" BeforeTargets="AssignTargetPaths">
+        <ItemGroup>
+            <!-- Glob all outputs from the x64 build -->
+            <AllX64Output Include="%(x64Output.RootDir)%(x64Output.Directory)**" CopyToOutputDirectory="PreserveNewest"/>
+            <Content Include="@(AllX64Output)" TargetPath="x64/%(Filename)%(Extension)" />
+
+            <!-- Glob all outputs from the arm64 build -->
+            <AllArm64Output Include="%(arm64Output.RootDir)%(arm64Output.Directory)**" CopyToOutputDirectory="PreserveNewest" />
+            <Content Include="@(AllArm64Output)" TargetPath="arm64/%(Filename)%(Extension)" />
+        </ItemGroup>
+    </Target>
+</Project>
