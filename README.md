@@ -8,7 +8,7 @@ This repo is a collection README's that document what I've learned in my ~4 year
 # Quick Links
 - [The Flavors of MSBuild](./the-flavors-of-msbuild/README.md) Did you know there are actually _three_ MSBuild.exe's that come with your install?
 - [Debugging MSBuild](./debugging-msbuild/README.md) The tricks I learned to debug various forms of MSBuild.
-- [Diagnosing Build Failures](./build-spelunking/README.md) For all your build spelunking needs.
+- [Diagnosing Build Failures](./build-spelunking/README.md) How to "Go to definition," and more!
 - [Including Generated Files Into Your Build](./including-generated-files/README.md) Includes a simplified explanation on `Evaluation` vs `Execution` phases of your build.
 - [MSBuild & the .NET SDK](./debugging-msbuild/README.md#msbuild--the-net-sdk) Notes on debugging custom MSBuild bits, SDK bits, or both!
 - [Multi-Platform Builds](./multi-platform-builds/README.md) (e.g. how to get a single build to generate x64 & arm64 outputs in one go)
