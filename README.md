@@ -15,11 +15,6 @@ This repo is a collection README's that document what I've learned in my ~4 year
 - [Notable Targets](./notable-targets/README.md) Unofficial docs on some relevant targets during the build.
 - [Tools and Resources](./tools-and-resources/README.md) Links for further reading.
 
-
-# The Absolute Basics
-
-- [Useful Tools](tools-and-resources\README.md)
-
 ## How to Use MSBuild
 `msbuild` works when called within a `Developer Command Prompt` and uses that Visual Studio's respective copy of `MSBuild.exe`
 `dotnet msbuild` is the .NET SDK's equivalent. It accepts all the same arguments as `msbuild.exe`.
