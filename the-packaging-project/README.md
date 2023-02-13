@@ -127,12 +127,9 @@ The final step is deciding where each item goes inside the NuGet package. You do
     </ItemGroup>
 ```
 
-Note: You may see a `NU5100` warning about dll's that aren't in a `lib/` folder. If your package does intentionally doesn't [follow NuGet best practices](), simply add `NU5100` to the `NoWarn` property.
+Note: You may see a `NU5100` warning about dll's that aren't in a `lib/` folder. If your package doesn't [follow NuGet best practices](https://learn.microsoft.com/nuget/create-packages/package-authoring-best-practices), add `NU5100` to the `NoWarn` property.
 ```xml
     <PropertyGroup>
         <NoWarn>$(NoWarn);NU5100</NoWarn>
     </PropertyGroup>
 ``` 
-
-# To Do
-The context for why specific flags exist.

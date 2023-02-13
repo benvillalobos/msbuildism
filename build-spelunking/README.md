@@ -1,7 +1,7 @@
-## Understanding The Build
+# Build Spelunking
 One of the biggest things devs struggle with is figuring out _exactly_ what caused something to happen in a build. Thankfully, there are a few tools that are super useful for navigating builds. Shoutout to [Kirill Osenkov](https://github.com/KirillOsenkov) for creating the [MSBuild Structured Log Viewer](https://msbuildlog.com/), and  [Mikayla Hutchison](https://github.com/mhutch), who made [MonoDevelop.MSBuildEditor](https://github.com/mhutch/MonoDevelop.MSBuildEditor)!
 
-# Binlog Viewer Tips & Tricks
+## Binlog Viewer Tips & Tricks
 [The binlog viewer](https://aka.ms/msbuild/binlog) is _fundamental_ in understanding your build these days. A text log may always be the source of truth, but the binlog viewer has some amazing features built into it.
 
 To generate a binlog, pass `/bl` to `msbuild` or `dotnet build` or set environment variable `MSBUILDDEBUGENGINE` to 1 and build. You can open the generated binlog [in the browser](https://live.msbuildlog.com/) or with [the Binlog Viewer](https://msbuildlog.com/). Using `MSBUILDDEBUGENGINE` is considered "maximal logging" that includes interprocess communication and other things. These logs are output to an `MSBuild_Logs` folder in the current directory or the path specified by the `MSBUILDDEBUGPATH` environment variable when set.
@@ -27,7 +27,7 @@ Note properties can also be search based on their usage: `$(TargetFramework)`.
 
 Using `TargetFramework` as an example, try searching `<TargetFramework>` in the "Find in Files" tab.
 
-Suddenly you'll see every instance within a build that would set the property `TargetFramework`. Combine this with [Seeing what imports MSBuild sees]() and you can find exactly when a property is first created and where it's overidden.
+Suddenly you'll see every instance within a build that would set the property `TargetFramework`. Combine this with [Seeing what imports MSBuild sees](#see-what-msbuild-sees) and you can find exactly when a property is first created and where it's overidden.
 
 #### "Go to Definition" on Items
 Note you can search `@(Content)` to find every usage of an item.
