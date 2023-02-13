@@ -10,6 +10,7 @@ This repo is a collection README's that document what I've learned in my ~4 year
 - [Debugging MSBuild](./debugging-msbuild/README.md) The tricks I learned to debug various forms of MSBuild.
 - [Diagnosing Build Failures](./build-spelunking/README.md) For all your build spelunking needs.
 - [Including Generated Files Into Your Build](./including-generated-files/README.md) Includes a simplified explanation on `Evaluation` vs `Execution` phases of your build.
+- [MSBuild & the .NET SDK](./debugging-msbuild/README.md#msbuild--the-net-sdk) Notes on debugging custom MSBuild bits, SDK bits, or both!
 - [Multi-Platform Builds](./multi-platform-builds/README.md) (e.g. how to get a single build to generate x64 & arm64 outputs in one go)
 - [The Packaging Project](./the-packaging-project/README.md) How to create a separate project that packages all of your outputs into a single NuGet Package `*.nupkg`.
 - [Notable Targets](./notable-targets/README.md) Unofficial docs on some relevant targets during the build.
